@@ -8,3 +8,9 @@ edition = "2018"
 
 [dependencies]
 num = "0.2.1"
+image = "0.23.0"
+piston = "*"
+piston_window = "*"
+piston2d-graphics = "*"
+pistoncore-glutin_window = "*"
+piston2d-opengl_graphics = "*"
