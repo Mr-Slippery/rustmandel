@@ -83,6 +83,17 @@ fn main() {
             } else if button == Button::Mouse(MouseButton::Right) {
                 zoom_out = true;
                 zoom_in = false;
+            } else {            
+                if button == Button::Keyboard(Key::RightBracket) {
+                    max_it += 16;
+                    println!("Increased max_it to: {}.", max_it);
+                } else if button == Button::Keyboard(Key::LeftBracket) {
+                    if max_it >= 16 {
+                        max_it -= 16;
+                        println!("Decreased max_it to: {}.", max_it);
+                    }
+                }
+                draw = true;
             }
         }
 
