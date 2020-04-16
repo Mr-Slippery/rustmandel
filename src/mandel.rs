@@ -7,11 +7,13 @@ pub struct IFS
     max_iter: u64
 }
 
+// Discrete Dynamical System
 pub trait DDS<State> {
     fn cont(&self, z: State) -> bool;
     fn next(&self, z: State, c: State) -> State;
 }
 
+// This implementation corresponds to the Mandelbrot fractal.
 impl DDS<Complex<f64>> for IFS {
     fn cont(&self, z: Complex<f64>) -> bool {
         z.norm_sqr() <= 4.0
@@ -22,6 +24,7 @@ impl DDS<Complex<f64>> for IFS {
     }
 }
 
+// Iterated Function System
 impl IFS
 {
     pub fn new(max_iter: u64) -> Self {
