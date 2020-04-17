@@ -9,6 +9,20 @@
             "problemMatcher": [
                 "$rustc"
             ],
+            "group": "build"
+        },
+        {
+            "type": "cargo",
+            "subcommand": "check",
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "group": "build"
+        },
+        {
+            "label": "cargo release",
+            "type": "shell",
+            "command": "cargo run --release",
             "group": {
                 "kind": "build",
                 "isDefault": true

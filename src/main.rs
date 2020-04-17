@@ -34,8 +34,8 @@ fn main() {
     
     let mut o_size = window.size();
     
-    let mut min = Complex::new(-2.0, -2.0);
-    let mut max = Complex::new(2.0, 2.0);
+    let mut min = Complex::new(-4.0, -4.0);
+    let mut max = Complex::new(4.0, 4.0);
 
     let mut max_it: u64 = 31;
 
@@ -44,6 +44,8 @@ fn main() {
 
     let mut x: f64 = 0.0;
     let mut y: f64 = 0.0;
+
+    let it_inc = 16;
 
     while let Some(e) = window.next() {
         let size = window.size();
@@ -85,11 +87,11 @@ fn main() {
                 zoom_in = false;
             } else {            
                 if button == Button::Keyboard(Key::RightBracket) {
-                    max_it += 16;
+                    max_it += it_inc;
                     println!("Increased max_it to: {}.", max_it);
                 } else if button == Button::Keyboard(Key::LeftBracket) {
-                    if max_it >= 16 {
-                        max_it -= 16;
+                    if max_it >= it_inc {
+                        max_it -= it_inc;
                         println!("Decreased max_it to: {}.", max_it);
                     }
                 }
@@ -106,16 +108,16 @@ fn main() {
             let interval = max - min;
             let cxy = min + Complex::new(x * interval.re / size.width,
                                          y * interval.im / size.height);
-            let zoom = 1.0/1.25;
+            let zoom = 1.25;
             let mut mult = 1.0;
 
             if zoom_in {
-                mult = zoom;
-                max_it += 16
+                mult = 1.0 / zoom;
+                max_it += it_inc
             } else if zoom_out {
-                mult = 1.0/zoom;
-                if max_it >= 64 {
-                    max_it -=16
+                mult = zoom;
+                if max_it >= it_inc {
+                    max_it -= it_inc
                 }
             }
 
