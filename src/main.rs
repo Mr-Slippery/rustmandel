@@ -1,6 +1,7 @@
 pub mod mandel;
 
 use mandel::IFS;
+use mandel::Mandelbrot;
 use num::complex::Complex;
 
 extern crate piston_window;
@@ -134,14 +135,16 @@ fn main() {
         if draw {
             draw = false;
             let (d_x, d_y) = (canvas.width(), canvas.height());
-            let mandel = IFS::new(max_it);
+            let mandel = Mandelbrot::new(max_it);
             for j in 0..d_y {
                 for i in 0..d_x {
                     let x = min.re + (max.re - min.re) * (i as f64) / (d_x as f64);
                     let y = min.im + (max.im - min.im) * (j as f64) / (d_y as f64);
                     let c = Complex::new(x, y);
-                    let m = ((mandel.iter(c) * 8) % 256) as u8;
-                    canvas.put_pixel(i, j, im::Rgba([m, m, m, 255]));
+//                    let m = mandel.iter(Complex::new(0.0, 0.0), c);
+                    let m = mandel.iter(c, Complex::new(-0.70, -0.33));
+                    let col = ((m * 8) % 256) as u8;
+                    canvas.put_pixel(i, j, im::Rgba([col, col, col, 255]));
                 }
             }
         }
