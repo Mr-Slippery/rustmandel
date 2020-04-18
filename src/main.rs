@@ -14,6 +14,12 @@ enum MandelType {
     Julia
 }
 
+enum Zoom {
+    In,
+    Out,
+    None
+}
+
 fn main() {
     
     let opengl = OpenGL::V3_2;
@@ -45,8 +51,7 @@ fn main() {
 
     let mut max_it: u64 = 31;
 
-    let mut zoom_in = false;
-    let mut zoom_out = false;
+    let mut zoom = Zoom::None;
 
     let mut x: f64 = 0.0;
     let mut y: f64 = 0.0;
@@ -87,12 +92,12 @@ fn main() {
         }
 
         if let Some(button) = e.press_args() {
+            draw = true;
+
             if button == Button::Mouse(MouseButton::Left) {
-                zoom_in = true;
-                zoom_out = false;
+                zoom = Zoom::In
             } else if button == Button::Mouse(MouseButton::Right) {
-                zoom_out = true;
-                zoom_in = false;
+                zoom = Zoom::Out
             } else {            
                 if button == Button::Keyboard(Key::RightBracket) {
                     max_it += it_inc;
@@ -107,7 +112,6 @@ fn main() {
                 } else if button == Button::Keyboard(Key::J) {
                     mandel_type = MandelType::Julia;
                 }
-                draw = true;
             }
         }
 
@@ -116,35 +120,41 @@ fn main() {
             y = pos[1] as f64;
         }
 
-        if zoom_in || zoom_out {
-            let interval = max - min;
-            let cxy = min + Complex::new(x * interval.re / size.width,
-                                         y * interval.im / size.height);
-            let zoom = 1.25;
-            let mut mult = 1.0;
-
-            if zoom_in {
-                mult = 1.0 / zoom;
-                max_it += it_inc
-            } else if zoom_out {
-                mult = zoom;
-                if max_it >= it_inc {
-                    max_it -= it_inc
-                }
-            }
-
-            let new_interval = interval * mult;
-
-            min = cxy - new_interval / 2.0;
-            max = cxy + new_interval / 2.0;
-
-            zoom_in = false;
-            zoom_out = false;
-            draw = true;
-        }
 
         if draw {
             draw = false;
+
+            let zoom_factor = 1.25;
+            let mult: f64;
+
+            match zoom {
+                Zoom::In => {
+                    mult = 1.0 / zoom_factor;
+                    max_it += it_inc
+                }
+                Zoom::Out => {
+                    mult = zoom_factor;
+                    if max_it >= it_inc {
+                        max_it -= it_inc
+                    }
+                }
+                Zoom::None => {
+                    mult = 1.0;
+                }
+            }
+            zoom = Zoom::None;
+
+            if mult != 1.0 {
+                let interval = max - min;
+                let cxy = min + Complex::new(x * interval.re / size.width,
+                                             y * interval.im / size.height);
+
+                let new_interval = interval * mult;
+
+                min = cxy - new_interval / 2.0;
+                max = cxy + new_interval / 2.0;
+            }
+
             let (d_x, d_y) = (canvas.width(), canvas.height());
             let mandel = Mandelbrot::new(max_it);
             for j in 0..d_y {
