@@ -1,6 +1,7 @@
-extern crate num;
-
 use num::complex::Complex;
+
+use crate::lib::dyn_sys::IFS;
+use crate::lib::dyn_sys::DDS;
 
 pub struct Mandelbrot
 {
@@ -15,16 +16,6 @@ impl Mandelbrot
             max_iter: max_iter
         }
     }
-}
-
-// Discrete Dynamical System
-pub trait DDS<State> {
-    fn cont(&self, z: State) -> bool;
-    fn next(&self, z: State, c: State) -> State;
-}
-
-pub trait IFS<State> {
-    fn iter(&self, start: State, param: State) -> u64;
 }
 
 impl IFS<Complex<f64>> for Mandelbrot {

@@ -1,13 +1,9 @@
-pub mod mandel;
-
-use mandel::IFS;
-use mandel::Mandelbrot;
 use num::complex::Complex;
 
-extern crate piston_window;
-extern crate image as im;
-
-use piston_window::*;
+mod lib;
+use lib::*;
+use lib::mandel::Mandelbrot;
+use lib::dyn_sys::IFS;
 
 enum MandelType {
     Mandelbrot,
