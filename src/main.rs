@@ -9,6 +9,11 @@ extern crate image as im;
 
 use piston_window::*;
 
+enum MandelType {
+    Mandelbrot,
+    Julia
+}
+
 fn main() {
     
     let opengl = OpenGL::V3_2;
@@ -47,6 +52,8 @@ fn main() {
     let mut y: f64 = 0.0;
 
     let it_inc = 16;
+
+    let mut mandel_type: MandelType = MandelType::Mandelbrot; 
 
     while let Some(e) = window.next() {
         let size = window.size();
@@ -95,6 +102,10 @@ fn main() {
                         max_it -= it_inc;
                         println!("Decreased max_it to: {}.", max_it);
                     }
+                } else if button == Button::Keyboard(Key::M) {
+                    mandel_type = MandelType::Mandelbrot;
+                } else if button == Button::Keyboard(Key::J) {
+                    mandel_type = MandelType::Julia;
                 }
                 draw = true;
             }
@@ -141,8 +152,15 @@ fn main() {
                     let x = min.re + (max.re - min.re) * (i as f64) / (d_x as f64);
                     let y = min.im + (max.im - min.im) * (j as f64) / (d_y as f64);
                     let c = Complex::new(x, y);
-//                    let m = mandel.iter(Complex::new(0.0, 0.0), c);
-                    let m = mandel.iter(c, Complex::new(-0.70, -0.33));
+                    let m: u64;
+                    match mandel_type {
+                        MandelType::Mandelbrot => {
+                            m = mandel.iter(Complex::new(0.0, 0.0), c);
+                        }
+                        MandelType::Julia => {
+                            m = mandel.iter(c, Complex::new(-0.70, -0.33));
+                        }
+                    }
                     let col = ((m * 8) % 256) as u8;
                     canvas.put_pixel(i, j, im::Rgba([col, col, col, 255]));
                 }

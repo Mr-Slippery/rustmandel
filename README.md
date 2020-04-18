@@ -4,7 +4,11 @@ Mandelbrot zoomer in Rust with Piston for graphics.
 
 Recommend release build: `cargo run --release`
 
-Controls: Left/right click to zoom, brackets to increase/decrease max iterations.
+Controls:
+
+* left/right-click to zoom;
+* brackets to increase/decrease max iterations;
+* M/J to switch to (M)andelbrot/(J)ulia.
 
 Learning Rust, so the code is very nascent probably.
 Any comments welcome.
