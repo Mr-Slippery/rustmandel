@@ -117,7 +117,13 @@ fn main() {
                                            now.to_rfc3339(), min, max, mandel_type);
                     let _ = canvas.save(&filename);
                     println!("Saved: {}.", filename);
-                    draw = false;                                    
+                    draw = false;
+                } Button::Keyboard(Key::C) => {
+                    let interval = max - min;
+                    let cxy = min + Complex::new(x * interval.re / size.width,
+                                                 y * interval.im / size.height);
+                    min = cxy - interval / 2.0;
+                    max = cxy + interval / 2.0;
                 } Button::Keyboard(Key::Left) => {
                     min.re -= move_inc_rate * (max.re - min.re);
                     max.re -= move_inc_rate * (max.re - min.re);

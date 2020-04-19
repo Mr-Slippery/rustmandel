@@ -6,11 +6,12 @@ Recommend release build: `cargo run --release`
 
 Controls:
 
-* left/right-click to zoom;
-* brackets to increase/decrease max iterations;
+* Left/right-click to zoom;
+* Left/right/up/down arrows for movement;
+* C to center on the mouse cursor;
+* Brackets to increase/decrease max iterations;
 * M/J to switch to (M)andelbrot/(J)ulia;
-* S to save the image to the current dir;
-* left/right/up/down arrows for movement.
+* S to save the image to the current dir.
 
 Learning Rust, so the code is very nascent probably.
 Any comments welcome.
