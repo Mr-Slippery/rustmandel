@@ -89,25 +89,27 @@ fn main() {
 
         if let Some(button) = e.press_args() {
             draw = true;
-
-            if button == Button::Mouse(MouseButton::Left) {
-                zoom = Zoom::In
-            } else if button == Button::Mouse(MouseButton::Right) {
-                zoom = Zoom::Out
-            } else {            
-                if button == Button::Keyboard(Key::RightBracket) {
+            match button {
+                Button::Mouse(MouseButton::Left) => {
+                    zoom = Zoom::In
+                }
+                Button::Mouse(MouseButton::Right) => {
+                    zoom = Zoom::Out
+                }
+                Button::Keyboard(Key::RightBracket) => {
                     max_it += it_inc;
                     println!("Increased max_it to: {}.", max_it);
-                } else if button == Button::Keyboard(Key::LeftBracket) {
+                } Button::Keyboard(Key::LeftBracket) => {
                     if max_it >= it_inc {
                         max_it -= it_inc;
                         println!("Decreased max_it to: {}.", max_it);
                     }
-                } else if button == Button::Keyboard(Key::M) {
+                } Button::Keyboard(Key::M) => {
                     mandel_type = MandelType::Mandelbrot;
-                } else if button == Button::Keyboard(Key::J) {
+                } Button::Keyboard(Key::J) => {
                     mandel_type = MandelType::Julia;
                 }
+                _ => {}
             }
         }
 
