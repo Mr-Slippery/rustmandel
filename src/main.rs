@@ -54,6 +54,7 @@ fn main() {
     let mut x: f64 = 0.0;
     let mut y: f64 = 0.0;
 
+    let move_inc_rate = 0.1;
     let it_inc = 16;
 
     let mut mandel_type: MandelType = MandelType::Mandelbrot; 
@@ -115,7 +116,20 @@ fn main() {
                     let filename = format!("out_{}_min_{}_max_{}_type_{:?}.png",
                                            now.to_rfc3339(), min, max, mandel_type);
                     let _ = canvas.save(&filename);
-                    println!("Saved: {}.", filename);                                        
+                    println!("Saved: {}.", filename);
+                    draw = false;                                    
+                } Button::Keyboard(Key::Left) => {
+                    min.re -= move_inc_rate * (max.re - min.re);
+                    max.re -= move_inc_rate * (max.re - min.re);
+                } Button::Keyboard(Key::Right) => {
+                    min.re += move_inc_rate * (max.re - min.re);
+                    max.re += move_inc_rate * (max.re - min.re);
+                } Button::Keyboard(Key::Up) => {
+                    min.im -= move_inc_rate * (max.im - min.im);
+                    max.im -= move_inc_rate * (max.im - min.im);
+                } Button::Keyboard(Key::Down) => {
+                    min.im += move_inc_rate * (max.im - min.im);
+                    max.im += move_inc_rate * (max.im - min.im);
                 }
                 _ => {}
             }
