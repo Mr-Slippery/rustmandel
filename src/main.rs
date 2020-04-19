@@ -1,3 +1,4 @@
+use chrono::{DateTime, Local};
 use num::complex::Complex;
 
 mod lib;
@@ -5,6 +6,7 @@ use lib::*;
 use lib::mandel::Mandelbrot;
 use lib::dyn_sys::IFS;
 
+#[derive(Debug)]
 enum MandelType {
     Mandelbrot,
     Julia
@@ -108,6 +110,12 @@ fn main() {
                     mandel_type = MandelType::Mandelbrot;
                 } Button::Keyboard(Key::J) => {
                     mandel_type = MandelType::Julia;
+                } Button::Keyboard(Key::S) => {
+                    let now: DateTime<Local> = Local::now();
+                    let filename = format!("out_{}_min_{}_max_{}_type_{:?}.png",
+                                           now.to_rfc3339(), min, max, mandel_type);
+                    let _ = canvas.save(&filename);
+                    println!("Saved: {}.", filename);                                        
                 }
                 _ => {}
             }

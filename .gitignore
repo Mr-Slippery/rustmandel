@@ -1,2 +1,5 @@
 /target
 Cargo.lock
+
+# Saved images
+out_*.png

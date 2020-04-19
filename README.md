@@ -8,7 +8,8 @@ Controls:
 
 * left/right-click to zoom;
 * brackets to increase/decrease max iterations;
-* M/J to switch to (M)andelbrot/(J)ulia.
+* M/J to switch to (M)andelbrot/(J)ulia;
+* S to save the image to the current dir.
 
 Learning Rust, so the code is very nascent probably.
 Any comments welcome.
