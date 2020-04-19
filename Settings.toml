@@ -1,0 +1,14 @@
+[window]
+width = 500
+height = 500
+size_inc = 50.0
+
+[fractal]
+min_re = -4.0
+min_im = -4.0
+max_re = 4.0
+max_im = 4.0
+max_it = 31
+it_inc = 16
+move_inc_rate = 0.06
+zoom_factor = 1.25

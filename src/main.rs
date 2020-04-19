@@ -1,63 +1,73 @@
 use chrono::{DateTime, Local};
 use num::complex::Complex;
+use std::error::Error;
 
 mod lib;
-use lib::*;
-use lib::mandel::Mandelbrot;
+use lib::config::Config;
 use lib::dyn_sys::IFS;
+use lib::mandel::Mandelbrot;
+use lib::*;
 
 #[derive(Debug)]
 enum MandelType {
     Mandelbrot,
-    Julia
+    Julia,
 }
 
 enum Zoom {
     In,
     Out,
-    None
+    None,
 }
 
-fn main() {
-    
+fn main() -> Result<(), Box<dyn Error>> {
+    let mut settings = Config::default();
+    settings
+        // Add in `./Settings.toml`
+        .merge(config::File::with_name("Settings"))
+        .unwrap();
     let opengl = OpenGL::V3_2;
-    let (width, height) = (500, 500);
-    let mut window: PistonWindow =
-        WindowSettings::new("Mandelbrot", (width, height))
+    let width = settings.get::<u32>("window.width").unwrap();
+    let height = settings.get::<u32>("window.height").unwrap();
+    let mut window: PistonWindow = WindowSettings::new("Mandelbrot", (width, height))
+        .resizable(true)
         .exit_on_esc(true)
         .graphics_api(opengl)
         .build()
         .unwrap();
-
-    let mut draw = true;
+    let size_inc = settings.get::<f64>("window.size_inc").unwrap();
 
     let mut canvas = im::ImageBuffer::new(width, height);
     let mut texture_context = TextureContext {
         factory: window.factory.clone(),
-        encoder: window.factory.create_command_buffer().into()
+        encoder: window.factory.create_command_buffer().into(),
     };
-    let mut texture: G2dTexture = Texture::from_image(
-            &mut texture_context,
-            &canvas,
-            &TextureSettings::new()
-        ).unwrap();
-    
-    let mut o_size = window.size();
-    
-    let mut min = Complex::new(-4.0, -4.0);
-    let mut max = Complex::new(4.0, 4.0);
+    let mut texture: G2dTexture =
+        Texture::from_image(&mut texture_context, &canvas, &TextureSettings::new()).unwrap();
 
-    let mut max_it: u64 = 31;
+    let mut o_size = window.size();
+
+    let mut min = Complex::new(
+        settings.get::<f64>("fractal.min_re").unwrap(),
+        settings.get::<f64>("fractal.min_im").unwrap(),
+    );
+    let mut max = Complex::new(
+        settings.get::<f64>("fractal.max_re").unwrap(),
+        settings.get::<f64>("fractal.max_im").unwrap(),
+    );
+    let mut max_it: u64 = settings.get::<u64>("fractal.max_it").unwrap();
+    let it_inc = settings.get::<u64>("fractal.it_inc").unwrap();
+    let move_inc_rate = settings.get::<f64>("fractal.move_inc_rate").unwrap();
 
     let mut zoom = Zoom::None;
+    let zoom_factor = settings.get::<f64>("fractal.zoom_factor").unwrap();
 
     let mut x: f64 = 0.0;
     let mut y: f64 = 0.0;
 
-    let move_inc_rate = 0.1;
-    let it_inc = 16;
+    let mut mandel_type: MandelType = MandelType::Mandelbrot;
 
-    let mut mandel_type: MandelType = MandelType::Mandelbrot; 
+    let mut draw = true;
 
     while let Some(e) = window.next() {
         let size = window.size();
@@ -69,7 +79,7 @@ fn main() {
                 texture_context.encoder.flush(device);
 
                 clear([1.0; 4], g);
-                image(&texture, c.transform, g);
+                image(&texture, c.transform, g)
             });
         }
 
@@ -78,65 +88,87 @@ fn main() {
                 canvas = im::ImageBuffer::new(size.width as u32, size.height as u32);
                 texture_context = TextureContext {
                     factory: window.factory.clone(),
-                    encoder: window.factory.create_command_buffer().into()
+                    encoder: window.factory.create_command_buffer().into(),
                 };
-                texture = Texture::from_image(
-                        &mut texture_context,
-                        &canvas,
-                        &TextureSettings::new()
-                    ).unwrap();
+                texture =
+                    Texture::from_image(&mut texture_context, &canvas, &TextureSettings::new())
+                        .unwrap();
                 draw = true;
-                o_size = size;
+                o_size = size
             }
         }
 
         if let Some(button) = e.press_args() {
             draw = true;
             match button {
-                Button::Mouse(MouseButton::Left) => {
-                    zoom = Zoom::In
+                // Zoom
+                Button::Mouse(MouseButton::Left) => zoom = Zoom::In,
+                Button::Mouse(MouseButton::Right) => zoom = Zoom::Out,
+                // Movement
+                Button::Keyboard(Key::Left) => {
+                    min.re -= move_inc_rate * (max.re - min.re);
+                    max.re -= move_inc_rate * (max.re - min.re)
                 }
-                Button::Mouse(MouseButton::Right) => {
-                    zoom = Zoom::Out
+                Button::Keyboard(Key::Right) => {
+                    min.re += move_inc_rate * (max.re - min.re);
+                    max.re += move_inc_rate * (max.re - min.re)
                 }
+                Button::Keyboard(Key::Up) => {
+                    min.im -= move_inc_rate * (max.im - min.im);
+                    max.im -= move_inc_rate * (max.im - min.im)
+                }
+                Button::Keyboard(Key::Down) => {
+                    min.im += move_inc_rate * (max.im - min.im);
+                    max.im += move_inc_rate * (max.im - min.im)
+                }
+                // Center on mouse cursor.
+                Button::Keyboard(Key::C) => {
+                    let interval = max - min;
+                    let cxy = min
+                        + Complex::new(x * interval.re / size.width, y * interval.im / size.height);
+                    min = cxy - interval / 2.0;
+                    max = cxy + interval / 2.0
+                }
+                // Increase/decrease maximum iterations.
                 Button::Keyboard(Key::RightBracket) => {
                     max_it += it_inc;
-                    println!("Increased max_it to: {}.", max_it);
-                } Button::Keyboard(Key::LeftBracket) => {
+                    println!("Increased max_it to: {}.", max_it)
+                }
+                Button::Keyboard(Key::LeftBracket) => {
                     if max_it >= it_inc {
                         max_it -= it_inc;
-                        println!("Decreased max_it to: {}.", max_it);
+                        println!("Decreased max_it to: {}.", max_it)
                     }
-                } Button::Keyboard(Key::M) => {
-                    mandel_type = MandelType::Mandelbrot;
-                } Button::Keyboard(Key::J) => {
-                    mandel_type = MandelType::Julia;
-                } Button::Keyboard(Key::S) => {
+                }
+                // Alter fractal type.
+                Button::Keyboard(Key::M) => mandel_type = MandelType::Mandelbrot,
+                Button::Keyboard(Key::J) => mandel_type = MandelType::Julia,
+                // Save image to file.
+                Button::Keyboard(Key::S) => {
                     let now: DateTime<Local> = Local::now();
-                    let filename = format!("out_{}_min_{}_max_{}_type_{:?}.png",
-                                           now.to_rfc3339(), min, max, mandel_type);
+                    let filename = format!(
+                        "out_{}_min_{}_max_{}_type_{:?}.png",
+                        now.to_rfc3339(),
+                        min,
+                        max,
+                        mandel_type
+                    );
                     let _ = canvas.save(&filename);
                     println!("Saved: {}.", filename);
-                    draw = false;
-                } Button::Keyboard(Key::C) => {
-                    let interval = max - min;
-                    let cxy = min + Complex::new(x * interval.re / size.width,
-                                                 y * interval.im / size.height);
-                    min = cxy - interval / 2.0;
-                    max = cxy + interval / 2.0;
-                } Button::Keyboard(Key::Left) => {
-                    min.re -= move_inc_rate * (max.re - min.re);
-                    max.re -= move_inc_rate * (max.re - min.re);
-                } Button::Keyboard(Key::Right) => {
-                    min.re += move_inc_rate * (max.re - min.re);
-                    max.re += move_inc_rate * (max.re - min.re);
-                } Button::Keyboard(Key::Up) => {
-                    min.im -= move_inc_rate * (max.im - min.im);
-                    max.im -= move_inc_rate * (max.im - min.im);
-                } Button::Keyboard(Key::Down) => {
-                    min.im += move_inc_rate * (max.im - min.im);
-                    max.im += move_inc_rate * (max.im - min.im);
+                    draw = false
                 }
+                Button::Keyboard(Key::D1) => {
+                    if size.height >= size_inc && size.width >= size_inc {
+                        window.set_size(Size {
+                            height: size.height - size_inc,
+                            width: size.width - size_inc,
+                        })
+                    }
+                }
+                Button::Keyboard(Key::D2) => window.set_size(Size {
+                    height: size.height + size_inc,
+                    width: size.width + size_inc,
+                }),
                 _ => {}
             }
         }
@@ -146,13 +178,10 @@ fn main() {
             y = pos[1] as f64;
         }
 
-
         if draw {
             draw = false;
 
-            let zoom_factor = 1.25;
             let mult: f64;
-
             match zoom {
                 Zoom::In => {
                     mult = 1.0 / zoom_factor;
@@ -164,21 +193,19 @@ fn main() {
                         max_it -= it_inc
                     }
                 }
-                Zoom::None => {
-                    mult = 1.0;
-                }
+                Zoom::None => mult = 1.0,
             }
             zoom = Zoom::None;
 
             if mult != 1.0 {
                 let interval = max - min;
-                let cxy = min + Complex::new(x * interval.re / size.width,
-                                             y * interval.im / size.height);
+                let cxy =
+                    min + Complex::new(x * interval.re / size.width, y * interval.im / size.height);
 
                 let new_interval = interval * mult;
 
                 min = cxy - new_interval / 2.0;
-                max = cxy + new_interval / 2.0;
+                max = cxy + new_interval / 2.0
             }
 
             let (d_x, d_y) = (canvas.width(), canvas.height());
@@ -190,17 +217,14 @@ fn main() {
                     let c = Complex::new(x, y);
                     let m: u64;
                     match mandel_type {
-                        MandelType::Mandelbrot => {
-                            m = mandel.iter(Complex::new(0.0, 0.0), c);
-                        }
-                        MandelType::Julia => {
-                            m = mandel.iter(c, Complex::new(-0.70, -0.33));
-                        }
+                        MandelType::Mandelbrot => m = mandel.iter(Complex::new(0.0, 0.0), c),
+                        MandelType::Julia => m = mandel.iter(c, Complex::new(-0.70, -0.33)),
                     }
                     let col = ((m * 8) % 256) as u8;
-                    canvas.put_pixel(i, j, im::Rgba([col, col, col, 255]));
+                    canvas.put_pixel(i, j, im::Rgba([col, col, col, 255]))
                 }
             }
         }
     }
+    Ok(())
 }

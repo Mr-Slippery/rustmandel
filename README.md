@@ -11,6 +11,7 @@ Controls:
 * C to center on the mouse cursor;
 * Brackets to increase/decrease max iterations;
 * M/J to switch to (M)andelbrot/(J)ulia;
+* 1/2 to decrease/increase window size;
 * S to save the image to the current dir.
 
 Learning Rust, so the code is very nascent probably.
