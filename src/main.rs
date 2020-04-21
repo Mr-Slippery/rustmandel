@@ -1,3 +1,11 @@
+#[macro_use]
+pub extern crate custom_derive;
+#[macro_use]
+pub extern crate enum_derive;
+
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
+
 use chrono::{DateTime, Local};
 use num::complex::Complex;
 use std::error::Error;
@@ -8,10 +16,25 @@ use lib::dyn_sys::IFS;
 use lib::mandel::Mandelbrot;
 use lib::*;
 
-#[derive(Debug)]
-enum MandelType {
-    Mandelbrot,
-    Julia,
+#[derive(Debug, Copy, Clone, FromPrimitive)]
+enum ColorScheme {
+    Silver = 0,
+    Blue
+}
+
+fn next(d: ColorScheme) -> ColorScheme {
+    match FromPrimitive::from_u8(d as u8 + 1) {
+        Some(d2) => d2,
+        None => FromPrimitive::from_u8(0).unwrap(),
+    }
+}
+
+custom_derive! {
+    #[derive(Debug, EnumFromStr)]
+    enum MandelType {
+        Mandelbrot,
+        Julia,
+    }
 }
 
 enum Zoom {
@@ -65,8 +88,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut x: f64 = 0.0;
     let mut y: f64 = 0.0;
 
-    let mut mandel_type: MandelType = MandelType::Mandelbrot;
-
+    let mut fractal_type: MandelType = settings.get::<String>("fractal.type")
+                                            .unwrap().parse().unwrap();
+    let mut color_scheme: ColorScheme = FromPrimitive::from_u8(settings.get::<u8>("fractal.color_scheme")
+                                            .unwrap()).unwrap();
     let mut draw = true;
 
     while let Some(e) = window.next() {
@@ -141,8 +166,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
                 // Alter fractal type.
-                Button::Keyboard(Key::M) => mandel_type = MandelType::Mandelbrot,
-                Button::Keyboard(Key::J) => mandel_type = MandelType::Julia,
+                Button::Keyboard(Key::M) => fractal_type = MandelType::Mandelbrot,
+                Button::Keyboard(Key::J) => fractal_type = MandelType::Julia,
                 // Save image to file.
                 Button::Keyboard(Key::S) => {
                     let now: DateTime<Local> = Local::now();
@@ -151,12 +176,15 @@ fn main() -> Result<(), Box<dyn Error>> {
                         now.to_rfc3339(),
                         min,
                         max,
-                        mandel_type
+                        fractal_type
                     );
                     let _ = canvas.save(&filename);
                     println!("Saved: {}.", filename);
                     draw = false
                 }
+                // Alter the color scheme.
+                Button::Keyboard(Key::D0) => color_scheme = next(color_scheme),
+                // Resize window
                 Button::Keyboard(Key::D1) => {
                     if size.height >= size_inc && size.width >= size_inc {
                         window.set_size(Size {
@@ -216,12 +244,20 @@ fn main() -> Result<(), Box<dyn Error>> {
                     let y = min.im + (max.im - min.im) * (j as f64) / (d_y as f64);
                     let c = Complex::new(x, y);
                     let m: u64;
-                    match mandel_type {
+                    match fractal_type {
                         MandelType::Mandelbrot => m = mandel.iter(Complex::new(0.0, 0.0), c),
                         MandelType::Julia => m = mandel.iter(c, Complex::new(-0.70, -0.33)),
                     }
-                    let col = ((m * 8) % 256) as u8;
-                    canvas.put_pixel(i, j, im::Rgba([col, col, col, 255]))
+                    match color_scheme {
+                        ColorScheme::Silver => {
+                            let col = ((m * 8) % 256) as u8;
+                            canvas.put_pixel(i, j, im::Rgba([col, col, col, 255]))
+                        }
+                        ColorScheme::Blue => {
+                            let col = ((m * 16) % 256) as u8;
+                            canvas.put_pixel(i, j, im::Rgba([0, 0, col, 255]))
+                        }
+                    }
                 }
             }
         }

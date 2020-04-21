@@ -12,3 +12,5 @@ max_it = 31
 it_inc = 16
 move_inc_rate = 0.06
 zoom_factor = 1.25
+type = "Mandelbrot" # "Julia"
+color_scheme = 0 # "Silver", "Blue"
