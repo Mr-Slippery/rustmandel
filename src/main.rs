@@ -19,7 +19,7 @@ use lib::*;
 #[derive(Debug, Copy, Clone, FromPrimitive)]
 enum ColorScheme {
     Silver = 0,
-    Blue
+    Times81632
 }
 
 fn next(d: ColorScheme) -> ColorScheme {
@@ -253,9 +253,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                             let col = ((m * 8) % 256) as u8;
                             canvas.put_pixel(i, j, im::Rgba([col, col, col, 255]))
                         }
-                        ColorScheme::Blue => {
-                            let col = ((m * 16) % 256) as u8;
-                            canvas.put_pixel(i, j, im::Rgba([0, 0, col, 255]))
+                        ColorScheme::Times81632 => {
+                            let col = ((m * 8) % 256) as u8;
+                            let col1 = ((m * 16) % 256) as u8;
+                            let col2 = ((m * 32) % 256) as u8;
+                            canvas.put_pixel(i, j, im::Rgba([col1, col2, col, 255]))
                         }
                     }
                 }
