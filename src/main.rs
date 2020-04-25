@@ -30,10 +30,11 @@ fn next(d: ColorScheme) -> ColorScheme {
 }
 
 custom_derive! {
-    #[derive(Debug, EnumFromStr)]
-    enum MandelType {
+    #[derive(Debug, Copy, Clone, EnumFromStr)]
+    enum FractalType {
         Mandelbrot,
         Julia,
+        Buddhabrot,
     }
 }
 
@@ -41,6 +42,40 @@ enum Zoom {
     In,
     Out,
     None,
+}
+
+fn render_mandel(d_x: u32, d_y: u32,
+                 min: Complex<f64>, max: Complex<f64>,
+                 max_it: u64,
+                 fractal_type: FractalType,
+                 color_scheme: ColorScheme,
+                 canvas: & mut im::RgbaImage) {
+    let mandel = Mandelbrot::new(max_it);
+    for j in 0..d_y {
+        for i in 0..d_x {
+            let x = min.re + (max.re - min.re) * (i as f64) / (d_x as f64);
+            let y = min.im + (max.im - min.im) * (j as f64) / (d_y as f64);
+            let c = Complex::new(x, y);
+            let m: u64;
+            match fractal_type {
+                FractalType::Mandelbrot => m = mandel.iter(Complex::new(0.0, 0.0), c),
+                FractalType::Julia => m = mandel.iter(c, Complex::new(-0.70, -0.33)),
+                _ => m = 0 // unreachable
+            }
+            match color_scheme {
+                ColorScheme::Silver => {
+                    let col = ((m * 8) % 256) as u8;
+                    canvas.put_pixel(i, j, im::Rgba([col, col, col, 255]))
+                }
+                ColorScheme::Times81632 => {
+                    let col = ((m * 8) % 256) as u8;
+                    let col1 = ((m * 16) % 256) as u8;
+                    let col2 = ((m * 32) % 256) as u8;
+                    canvas.put_pixel(i, j, im::Rgba([col, col1, col2, 255]))
+                }
+            }
+        }
+    }
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -88,7 +123,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut x: f64 = 0.0;
     let mut y: f64 = 0.0;
 
-    let mut fractal_type: MandelType = settings.get::<String>("fractal.type")
+    let mut fractal_type: FractalType = settings.get::<String>("fractal.type")
                                             .unwrap().parse().unwrap();
     let mut color_scheme: ColorScheme = FromPrimitive::from_u8(settings.get::<u8>("fractal.color_scheme")
                                             .unwrap()).unwrap();
@@ -166,8 +201,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
                 // Alter fractal type.
-                Button::Keyboard(Key::M) => fractal_type = MandelType::Mandelbrot,
-                Button::Keyboard(Key::J) => fractal_type = MandelType::Julia,
+                Button::Keyboard(Key::M) => fractal_type = FractalType::Mandelbrot,
+                Button::Keyboard(Key::J) => fractal_type = FractalType::Julia,
                 // Save image to file.
                 Button::Keyboard(Key::S) => {
                     let now: DateTime<Local> = Local::now();
@@ -237,30 +272,18 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
 
             let (d_x, d_y) = (canvas.width(), canvas.height());
-            let mandel = Mandelbrot::new(max_it);
-            for j in 0..d_y {
-                for i in 0..d_x {
-                    let x = min.re + (max.re - min.re) * (i as f64) / (d_x as f64);
-                    let y = min.im + (max.im - min.im) * (j as f64) / (d_y as f64);
-                    let c = Complex::new(x, y);
-                    let m: u64;
-                    match fractal_type {
-                        MandelType::Mandelbrot => m = mandel.iter(Complex::new(0.0, 0.0), c),
-                        MandelType::Julia => m = mandel.iter(c, Complex::new(-0.70, -0.33)),
-                    }
-                    match color_scheme {
-                        ColorScheme::Silver => {
-                            let col = ((m * 8) % 256) as u8;
-                            canvas.put_pixel(i, j, im::Rgba([col, col, col, 255]))
-                        }
-                        ColorScheme::Times81632 => {
-                            let col = ((m * 8) % 256) as u8;
-                            let col1 = ((m * 16) % 256) as u8;
-                            let col2 = ((m * 32) % 256) as u8;
-                            canvas.put_pixel(i, j, im::Rgba([col1, col2, col, 255]))
-                        }
-                    }
+
+            match fractal_type {
+                FractalType::Buddhabrot => {
+                    // TBD
                 }
+                FractalType::Mandelbrot | FractalType::Julia => 
+                    render_mandel(d_x, d_y,
+                                  min, max,
+                                  max_it,
+                                  fractal_type,
+                                  color_scheme,
+                                  & mut canvas)
             }
         }
     }
