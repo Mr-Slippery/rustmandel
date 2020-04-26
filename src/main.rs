@@ -44,6 +44,7 @@ enum Zoom {
     None,
 }
 
+#[inline]
 fn render_mandel(d_x: u32, d_y: u32,
                  min: Complex<f64>, max: Complex<f64>,
                  max_it: u64,
@@ -60,7 +61,7 @@ fn render_mandel(d_x: u32, d_y: u32,
             match fractal_type {
                 FractalType::Mandelbrot => m = mandel.iter(Complex::new(0.0, 0.0), c),
                 FractalType::Julia => m = mandel.iter(c, Complex::new(-0.70, -0.33)),
-                _ => m = 0 // unreachable
+                _ => unreachable!()
             }
             match color_scheme {
                 ColorScheme::Silver => {
