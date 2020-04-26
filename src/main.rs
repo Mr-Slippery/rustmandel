@@ -19,7 +19,7 @@ use lib::*;
 #[derive(Debug, Copy, Clone, FromPrimitive)]
 enum ColorScheme {
     Silver = 0,
-    Times81632
+    Times2232
 }
 
 fn next(d: ColorScheme) -> ColorScheme {
@@ -67,11 +67,10 @@ fn render_mandel(d_x: u32, d_y: u32,
                     let col = ((m * 8) % 256) as u8;
                     canvas.put_pixel(i, j, im::Rgba([col, col, col, 255]))
                 }
-                ColorScheme::Times81632 => {
-                    let col = ((m * 8) % 256) as u8;
-                    let col1 = ((m * 16) % 256) as u8;
-                    let col2 = ((m * 32) % 256) as u8;
-                    canvas.put_pixel(i, j, im::Rgba([col, col1, col2, 255]))
+                ColorScheme::Times2232 => {
+                    let col = ((m * 2) % 256) as u8;
+                    let col1 = ((m * 32) % 256) as u8;
+                    canvas.put_pixel(i, j, im::Rgba([col, col, col1, 255]))
                 }
             }
         }
