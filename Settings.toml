@@ -1,16 +1,20 @@
-[window]
+[w]
 width = 500
 height = 500
 size_inc = 50.0
 
-[fractal]
-min_re = -4.0
-min_im = -4.0
-max_re = 4.0
-max_im = 4.0
+[f]
+min = [
+    -4,
+    -4,
+]
+max = [
+    4,
+    4,
+]
 max_it = 31
 it_inc = 16
 move_inc_rate = 0.04
 zoom_factor = 1.25
-type = "Mandelbrot" # "Julia"
-color_scheme = 0 # "Silver", "Times81632"
+fractal_type = 'Mandelbrot'
+color_scheme = 'Silver'

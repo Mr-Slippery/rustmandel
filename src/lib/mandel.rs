@@ -34,7 +34,7 @@ impl DDS<Complex<f64>> for Mandelbrot {
     fn cont(&self, z: Complex<f64>) -> bool {
         z.norm_sqr() <= 4.0
     }
-
+    
     fn next(&self, z: Complex<f64>, c: Complex<f64>) -> Complex<f64> {
         z * z + c
     }

@@ -1,5 +1,10 @@
 /target
 Cargo.lock
-
-# Saved images
-out_*.png
+# Saved images and thumbs
+**/*.png
+# Saved configs
+**/*.cfg
+# Saves root
+save/*
+# Mac stuff
+**/.DS_Store
