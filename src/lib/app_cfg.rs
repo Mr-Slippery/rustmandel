@@ -53,12 +53,17 @@ pub struct AppConfig {
     pub f: FractalConfig, 
 }
 
-const SAVE_DIR: &str = "save";
-const CFG_DIR: &str = "cfg";
-const IMAGE_DIR: &str  = "image";
-const THUMB_DIR: &str= "thumb";
+pub const SAVE_DIR: &str = "save";
+pub const CFG_DIR: &str = "cfg";
+pub const IMAGE_DIR: &str = "image";
+pub const THUMB_DIR: &str = "thumb";
+pub const DEFAULT_CFG: &str = "Settings.toml";
+const THUMB_SUFFIX: &str = "_thumb.png";
+const IMAGE_SUFFIX: &str = ".png";
+const CFG_SUFFIX: &str = ".cfg";
 
 impl AppConfig {
+
     fn name(self) -> String {
         format!("min_re_{}_min_im_{}_max_re_{}_max_im_{}_max_it_{}_fractal_type_{:?}_color_scheme_{:?}",
             self.f.min.re, self.f.min.im, self.f.max.re, self.f.max.im,
@@ -89,14 +94,52 @@ impl AppConfig {
     }
     
     pub fn image_path(self) -> String {
-        self.path(SAVE_DIR.to_string(), IMAGE_DIR.to_string(), format!("{}.png", self.name()))
+        self.path(SAVE_DIR.to_string(), IMAGE_DIR.to_string(), format!("{}{}", self.name(), IMAGE_SUFFIX))
     }
 
     pub fn cfg_path(self) -> String {
-        self.path(SAVE_DIR.to_string(), CFG_DIR.to_string(), format!("{}.cfg", self.name()))
+        self.path(SAVE_DIR.to_string(), CFG_DIR.to_string(), format!("{}{}", self.name(), CFG_SUFFIX))
     }
 
     pub fn thumb_path(self) -> String {
-        self.path(SAVE_DIR.to_string(), THUMB_DIR.to_string(), format!("{}_thumb.png", self.name()))
+        self.path(SAVE_DIR.to_string(), THUMB_DIR.to_string(), format!("{}{}", self.name(), THUMB_SUFFIX))
+    }
+
+    fn cfg_name(arg: &String) -> String {
+        let path = std::path::PathBuf::from(&arg);
+        let basename = path.file_name().unwrap().to_str().unwrap();
+        let mut root = 
+            path.parent().unwrap().parent().unwrap().to_path_buf();
+        root.push(CFG_DIR);
+        if arg.ends_with(CFG_SUFFIX) {
+            arg.clone()
+        } else if arg.ends_with(THUMB_SUFFIX) {
+            let basenoext = (&basename[0..basename.len() - THUMB_SUFFIX.len()]).to_string();
+            root.push(format!("{}{}", basenoext, CFG_SUFFIX));
+            root.to_str().unwrap().to_string()
+        } else if arg.ends_with(IMAGE_SUFFIX) {
+            let basenoext = (&basename[0..basename.len() - IMAGE_SUFFIX.len()]).to_string();
+            root.push(format!("{}{}", basenoext, CFG_SUFFIX));
+            root.to_str().unwrap().to_string()
+        } else {
+            Self::default_cfg()
+        }
+    }
+
+    fn default_cfg() -> String {
+        format!("{}", DEFAULT_CFG)
+    }
+
+    pub fn from(arg: &String) -> AppConfig {
+        let cfg_filename = Self::cfg_name(arg);
+        let cfg_filename1 = cfg_filename.clone();
+        let app_config_str = fs::read_to_string(cfg_filename)
+            .expect(&format!("Something went wrong reading {}", cfg_filename1));
+        let cfg: AppConfig = toml::from_str(&app_config_str).unwrap();
+        return cfg
+    }
+
+    pub fn default() -> AppConfig {
+        Self::from(&Self::default_cfg())    
     }
 }

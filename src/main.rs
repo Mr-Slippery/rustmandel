@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::fs;
 use num::complex::Complex;
+use std::env;
 
 mod lib;
 use lib::dyn_sys::IFS;
@@ -56,10 +57,14 @@ fn render_mandel(c: &AppConfig,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let cfg_filename = "Settings.toml";
-    let app_config_str = fs::read_to_string(cfg_filename)
-        .expect(&format!("Something went wrong reading {}", cfg_filename));
-    let mut cfg: AppConfig = toml::from_str(&app_config_str).unwrap();
+    let args: Vec<String> = env::args().collect();
+    let mut cfg: AppConfig;
+    if !args.is_empty() {
+        let arg: String = args[1].clone();
+        cfg = AppConfig::from(&arg)
+    } else {
+        cfg = AppConfig::default()
+    }
     AppConfig::make_saves_dir()?;
     let opengl = OpenGL::V3_2;
     let mut window: PistonWindow = WindowSettings::new("Mandelbrot", (cfg.w.width, cfg.w.height))
@@ -162,7 +167,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 // Save image to file.
                 Button::Keyboard(Key::S) => {
                     let filename = format!(
-                        "{}.png",
+                        "{}",
                         cfg.image_path()
                     );
                     let _ = canvas.save(&filename).expect(&format!("Failed to write {}.", filename));
@@ -170,7 +175,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     draw = false
                 }
                 // Save place to file.
-                Button::Keyboard(Key::B) => {
+                Button::Keyboard(Key::F) => {
                     // Save the config.
                     let out_cfg_str = toml::to_string_pretty(&cfg).unwrap();
                     let name = cfg.cfg_path();

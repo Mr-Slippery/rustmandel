@@ -2,9 +2,5 @@
 Cargo.lock
 # Saved images and thumbs
 **/*.png
-# Saved configs
-**/*.cfg
-# Saves root
-save/*
 # Mac stuff
 **/.DS_Store

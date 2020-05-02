@@ -13,7 +13,8 @@ Controls:
 * M/J to switch to (M)andelbrot/(J)ulia;
 * 1/2 to decrease/increase window size;
 * 0 to cycle color schemes;
-* S to save the image to the current dir.
+* S to save the image to the save/image/ dir;
+* F to bookmark/save the position and thumbnail to save/cfg/ and save/thumb/ dirs.
 
 Learning Rust, so the code is very nascent probably.
 Any comments welcome.
