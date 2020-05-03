@@ -12,9 +12,10 @@ max = [
     4,
     4,
 ]
-max_it = 31
+max_it = 256
 it_inc = 16
 move_inc_rate = 0.04
 zoom_factor = 1.25
+fractal = 'Mandelbrot'
 fractal_type = 'Mandelbrot'
 color_scheme = 'Silver'

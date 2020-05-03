@@ -25,7 +25,12 @@ pub fn next(d: ColorScheme) -> ColorScheme {
 pub enum FractalType {
     Mandelbrot,
     Julia,
-    Buddhabrot,
+}
+
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+pub enum Fractal {
+    Mandelbrot,
+    Buddhabrot
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
@@ -43,6 +48,7 @@ pub struct FractalConfig {
     pub it_inc: u64,
     pub move_inc_rate: f64,
     pub zoom_factor: f64,
+    pub fractal: Fractal,
     pub fractal_type: FractalType,
     pub color_scheme: ColorScheme,    
 }
@@ -65,10 +71,11 @@ const CFG_SUFFIX: &str = ".cfg";
 impl AppConfig {
 
     fn name(self) -> String {
-        format!("min_re_{}_min_im_{}_max_re_{}_max_im_{}_max_it_{}_fractal_type_{:?}_color_scheme_{:?}",
+        format!("min_re_{}_min_im_{}_max_re_{}_max_im_{}_max_it_{}_fractal_{:?}_fractal_type_{:?}_color_scheme_{:?}",
             self.f.min.re, self.f.min.im, self.f.max.re, self.f.max.im,
             self.f.max_it,
-            self.f.fractal_type, self.f.color_scheme
+            self.f.fractal, self.f.fractal_type,
+            self.f.color_scheme
         )
     }
 

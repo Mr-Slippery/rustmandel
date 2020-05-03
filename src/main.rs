@@ -6,7 +6,8 @@ use std::env;
 mod lib;
 use lib::dyn_sys::IFS;
 use lib::mandel::Mandelbrot;
-use lib::app_cfg::*;
+use lib::buddha::Buddhabrot;
+use lib::app_cfg::{AppConfig, Fractal, FractalType, ColorScheme};
 use lib::*;
 
 enum Zoom {
@@ -31,8 +32,7 @@ fn render_mandel(c: &AppConfig,
             let m: u64;
             match c.f.fractal_type {
                 FractalType::Mandelbrot => m = mandel.iter(Complex::zero(), p),
-                FractalType::Julia => m = mandel.iter(p, Complex::new(-0.70, -0.33)),
-                _ => unreachable!()
+                FractalType::Julia => m = mandel.iter(p, Complex::new(-0.70, -0.33))
             }
             match c.f.color_scheme {
                 ColorScheme::Silver => {
@@ -50,8 +50,45 @@ fn render_mandel(c: &AppConfig,
                     let col2 = 2 * col * col1;
                     canvas.put_pixel(i, j, im::Rgba([col, col1, col2, 255]))
                 }
-
             }
+        }
+    }
+}
+
+use rand::prelude::*;
+
+const BUDDHABROT_POINTS: u64 = 50000;
+
+#[inline]
+fn render_buddha(c: &AppConfig,
+                 canvas: & mut im::RgbaImage) {
+    let bud = Buddhabrot::new(c.f.max_it);
+    let d_x = canvas.width();
+    let d_y = canvas.height();
+    let mut rng = rand::thread_rng();
+    for _ in 0..BUDDHABROT_POINTS {
+        let d_re = c.f.max.re - c.f.min.re;
+        let d_im = c.f.max.im - c.f.min.re;
+        let x: f64 = c.f.min.re - d_re + 3.0 * d_re * rng.gen::<f64>();
+        let y: f64 = c.f.min.im - d_im + 3.0 * d_im * rng.gen::<f64>();
+        let p = Complex::new(x, y);
+        let m: Vec<Complex<f64>>;
+        match c.f.fractal_type {
+            FractalType::Mandelbrot => m = bud.iter(Complex::zero(), p),
+            FractalType::Julia => m = bud.iter(p, Complex::new(-0.70, -0.33))
+        }
+        for z in m {
+            let px = (d_x as f64 * (z.re - c.f.min.re) / (c.f.max.re - c.f.min.re)) as u32;
+            let py = (d_y as f64 * (z.im - c.f.min.im) / (c.f.max.im - c.f.min.im)) as u32;
+            if px >= d_x || py >= d_y {
+                continue
+            }
+            let pixel = canvas.get_pixel_mut(px, py);
+            let rgba = pixel.0;
+            let r = if rgba[0] < 255 { rgba[0] + 1 } else { rgba[0] };
+            let g = if rgba[1] < 254 { rgba[1] + 2 } else { rgba[1] };
+            let b = if rgba[2] < 253 { rgba[2] + 3 } else { rgba[2] };
+            *pixel = im::Rgba([r, g, b, 255]);
         }
     }
 }
@@ -98,7 +135,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             window.draw_2d(&e, |c, g, device| {
                 // Update texture before rendering.
                 texture_context.encoder.flush(device);
-
                 clear([1.0; 4], g);
                 image(&texture, c.transform, g)
             });
@@ -125,6 +161,17 @@ fn main() -> Result<(), Box<dyn Error>> {
                 // Zoom
                 Button::Mouse(MouseButton::Left) => zoom = Zoom::In,
                 Button::Mouse(MouseButton::Right) => zoom = Zoom::Out,
+                // Clear
+                Button::Keyboard(Key::X) => {
+                    let d_x = canvas.width();
+                    let d_y = canvas.height();
+                    let p = im::Rgba([0,0,0,255]);
+                    for i in 0..d_x {
+                        for j in 0..d_y {
+                            canvas.put_pixel(i, j, p)
+                        }
+                    }
+                }                
                 // Movement
                 Button::Keyboard(Key::Left) => {
                     cfg.f.min.re -= cfg.f.move_inc_rate * (cfg.f.max.re - cfg.f.min.re);
@@ -162,8 +209,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
                 // Alter fractal type.
-                Button::Keyboard(Key::M) => cfg.f.fractal_type = FractalType::Mandelbrot,
-                Button::Keyboard(Key::J) => cfg.f.fractal_type = FractalType::Julia,
+                Button::Keyboard(Key::M) => cfg.f.fractal = Fractal::Mandelbrot,
+                Button::Keyboard(Key::B) => cfg.f.fractal = Fractal::Buddhabrot,
+                // Flip Mandelbrot/Julia fractal type.
+                Button::Keyboard(Key::J) => 
+                    cfg.f.fractal_type = match cfg.f.fractal_type {
+                            FractalType::Julia => FractalType::Mandelbrot,
+                            FractalType::Mandelbrot => FractalType::Julia
+                    },
                 // Save image to file.
                 Button::Keyboard(Key::S) => {
                     let filename = format!(
@@ -189,8 +242,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     let mut smallcfg = cfg.clone();
                     smallcfg.w.width = thumb_size;
                     smallcfg.w.height = thumb_size;
-                    render_mandel(&smallcfg, & mut thumb);
-                    let filename = cfg.thumb_path();
+                    match smallcfg.f.fractal {
+                        Fractal::Mandelbrot => render_mandel(&smallcfg, & mut thumb),
+                        Fractal::Buddhabrot => render_buddha(&smallcfg, & mut thumb)
+                    }
+                    let filename = smallcfg.thumb_path();
                     thumb.save(&filename).expect(&format!("Failed to write {}!", filename))
                 }
                 // Alter the color scheme.
@@ -247,12 +303,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 cfg.f.max = cxy + new_interval / 2.0
             }
 
-            match cfg.f.fractal_type {
-                FractalType::Buddhabrot => {
-                    // TBD
-                }
-                FractalType::Mandelbrot | FractalType::Julia => 
-                    render_mandel(&cfg, & mut canvas)
+            match cfg.f.fractal {
+                Fractal::Buddhabrot => render_buddha(&cfg, & mut canvas),
+                Fractal::Mandelbrot => render_mandel(&cfg, & mut canvas)
             }
         }
     }

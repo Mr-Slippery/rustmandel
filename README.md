@@ -14,6 +14,7 @@ Controls:
 * 1/2 to decrease/increase window size;
 * 0 to cycle color schemes;
 * S to save the image to the save/image/ dir;
+* X to clear canvas;
 * F to bookmark/save the position and thumbnail to save/cfg/ and save/thumb/ dirs.
 
 Learning Rust, so the code is very nascent probably.

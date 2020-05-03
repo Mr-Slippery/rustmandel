@@ -5,6 +5,6 @@ pub trait DDS<State> {
 }
 
 // Iterated Function System
-pub trait IFS<State> {
-    fn iter(&self, start: State, param: State) -> u64;
+pub trait IFS<State, Output> {
+    fn iter(&self, start: State, param: State) -> Output;
 }

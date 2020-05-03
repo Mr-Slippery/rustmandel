@@ -26,7 +26,25 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "cargo debug",
+            "type": "shell",
+            "command": "cargo run ${file}",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "env": {
+                    "RUST_BACKTRACE": "full"
+                }
+            },
+            "problemMatcher": [
+                "$rustc"
+            ]
         }
     ]
 }
