@@ -68,9 +68,9 @@ fn render_buddha(c: &AppConfig,
     let mut rng = rand::thread_rng();
     for _ in 0..BUDDHABROT_POINTS {
         let d_re = c.f.max.re - c.f.min.re;
-        let d_im = c.f.max.im - c.f.min.re;
-        let x: f64 = c.f.min.re - d_re + 3.0 * d_re * rng.gen::<f64>();
-        let y: f64 = c.f.min.im - d_im + 3.0 * d_im * rng.gen::<f64>();
+        let d_im = c.f.max.im - c.f.min.im;
+        let x: f64 = c.f.min.re - d_re * 0.5 + 2.0 * d_re * rng.gen::<f64>();
+        let y: f64 = c.f.min.im - d_im * 0.5 + 2.0 * d_im * rng.gen::<f64>();
         let p = Complex::new(x, y);
         let m: Vec<Complex<f64>>;
         match c.f.fractal_type {
@@ -78,11 +78,10 @@ fn render_buddha(c: &AppConfig,
             FractalType::Julia => m = bud.iter(p, Complex::new(-0.70, -0.33))
         }
         for z in m {
-            let px = (d_x as f64 * (z.re - c.f.min.re) / (c.f.max.re - c.f.min.re)) as u32;
-            let py = (d_y as f64 * (z.im - c.f.min.im) / (c.f.max.im - c.f.min.im)) as u32;
-            if px >= d_x || py >= d_y {
-                continue
-            }
+            let px = (d_x as f64 * (z.re - c.f.min.re) / d_re) as u32;
+            if px >= d_x { continue }
+            let py = (d_y as f64 * (z.im - c.f.min.im) / d_im) as u32;
+            if py >= d_y { continue }
             let pixel = canvas.get_pixel_mut(px, py);
             let rgba = pixel.0;
             let r = if rgba[0] < 255 { rgba[0] + 1 } else { rgba[0] };
