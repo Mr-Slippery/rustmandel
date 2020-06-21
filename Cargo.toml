@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 toml = "*"
-num-complex = { version = "*", features = ["serde"] }
+num-complex = { version = "0.2.4", features = ["serde"] }
 num-derive = "*"
 num-traits = "*"
 chrono = "*"
