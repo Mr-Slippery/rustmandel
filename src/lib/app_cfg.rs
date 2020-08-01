@@ -11,7 +11,8 @@ use num::complex::Complex;
 pub enum ColorScheme {
     Silver = 0,
     Times2232,
-    Crazy
+    Crazy,
+    Red,
 }
 
 pub fn next(d: ColorScheme) -> ColorScheme {

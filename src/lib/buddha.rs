@@ -35,6 +35,10 @@ impl IFS<Complex<f64>, Vec<Complex<f64>>> for Buddhabrot {
     }
 }
 
+use crate::lib::num_traits::Zero;
+use std::ops::Rem;
+use crate::lib::num_traits::MulAdd;
+
 // This implementation corresponds to the Mandelbrot fractal.
 impl DDS<Complex<f64>> for Buddhabrot {
     #[inline]

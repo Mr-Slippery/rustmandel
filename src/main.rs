@@ -2,6 +2,7 @@ use std::error::Error;
 use std::fs;
 use num::complex::Complex;
 use std::env;
+use rand::prelude::*;
 
 mod lib;
 use lib::dyn_sys::IFS;
@@ -20,7 +21,7 @@ use num_traits::Zero;
 
 #[inline]
 fn render_mandel(c: &AppConfig,
-                 canvas: & mut im::RgbaImage) {
+                 canvas: & mut im::RgbaImage) {        
     let mandel = Mandelbrot::new(c.f.max_it);
     let d_x = canvas.width();
     let d_y = canvas.height();
@@ -29,15 +30,20 @@ fn render_mandel(c: &AppConfig,
             let x = c.f.min.re + (c.f.max.re - c.f.min.re) * (i as f64) / (d_x as f64);
             let y = c.f.min.im + (c.f.max.im - c.f.min.im) * (j as f64) / (d_y as f64);
             let p = Complex::new(x, y);
-            let m: u64;
+            let m1: u64;
             match c.f.fractal_type {
-                FractalType::Mandelbrot => m = mandel.iter(Complex::zero(), p),
-                FractalType::Julia => m = mandel.iter(p, Complex::new(-0.70, -0.33))
+                FractalType::Mandelbrot => m1 = mandel.iter(Complex::zero(), p),
+                FractalType::Julia => m1 = mandel.iter(p, Complex::new(-0.70, -0.33))
             }
+            let m = m1 * 256 / c.f.max_it; 
             match c.f.color_scheme {
                 ColorScheme::Silver => {
                     let col = ((m * 8) % 256) as u8;
                     canvas.put_pixel(i, j, im::Rgba([col, col, col, 255]))
+                }
+                ColorScheme::Red => {
+                    let col = ((m * 8) % 256) as u8;
+                    canvas.put_pixel(i, j, im::Rgba([col, 0, 0, 255]))
                 }
                 ColorScheme::Times2232 => {
                     let col = ((m * 2) % 256) as u8;
@@ -46,18 +52,14 @@ fn render_mandel(c: &AppConfig,
                 }
                 ColorScheme::Crazy => {
                     let col = ((m as f64 / c.f.max_it as f64).sin() * 256.0) as u8;
-                    let col1 = ((m as f64 / c.f.max_it as f64).cos() * 256.0) as u8;
-                    let col2 = 2 * col * col1;
-                    canvas.put_pixel(i, j, im::Rgba([col, col1, col2, 255]))
+                    canvas.put_pixel(i, j, im::Rgba([col, col / 2, col / 4, 255]))
                 }
             }
         }
     }
 }
 
-use rand::prelude::*;
-
-const BUDDHABROT_POINTS: u64 = 50000;
+const BUDDHABROT_POINTS: u64 = 1000000;
 
 #[inline]
 fn render_buddha(c: &AppConfig,
@@ -93,6 +95,7 @@ fn render_buddha(c: &AppConfig,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let path = env::current_dir()?;
     let args: Vec<String> = env::args().collect();
     let mut cfg: AppConfig;
     if !args.is_empty() {
@@ -202,7 +205,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     println!("Increased max_it to: {}.", cfg.f.max_it)
                 }
                 Button::Keyboard(Key::LeftBracket) => {
-                    if cfg.f.max_it >= cfg.f.it_inc {
+                    if cfg.f.max_it > cfg.f.it_inc {
                         cfg.f.max_it -= cfg.f.it_inc;
                         println!("Decreased max_it to: {}.", cfg.f.max_it)
                     }
@@ -222,8 +225,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                         "{}",
                         cfg.image_path()
                     );
-                    let _ = canvas.save(&filename).expect(&format!("Failed to write {}.", filename));
-                    println!("Saved image: {}.", filename);
+                    let _ = canvas.save(&filename).expect(&format!("Failed to write: `{}/{}`.", path.display(), filename));
+                    println!("Saved image: `{}/{}`.", path.display(), filename);
                     draw = false
                 }
                 // Save place to file.
@@ -234,7 +237,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     let name1 = name.clone();
                     fs::write(name, &out_cfg_str)
                         .expect("Failed to write config!");
-                    println!("Wrote config: {}.", name1);
+                    println!("Wrote config: `{}/{}`.", path.display(), name1);
                     // Save a thumbnail.
                     let thumb_size = 100;
                     let mut thumb = im::RgbaImage::new(thumb_size, thumb_size);
@@ -246,7 +249,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         Fractal::Buddhabrot => render_buddha(&smallcfg, & mut thumb)
                     }
                     let filename = smallcfg.thumb_path();
-                    thumb.save(&filename).expect(&format!("Failed to write {}!", filename))
+                    thumb.save(&filename).expect(&format!("Failed to write: `{}/{}`!", path.display(), filename))
                 }
                 // Alter the color scheme.
                 Button::Keyboard(Key::D0) => cfg.f.color_scheme = lib::app_cfg::next(cfg.f.color_scheme),
@@ -283,7 +286,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
                 Zoom::Out => {
                     mult = cfg.f.zoom_factor;
-                    if cfg.f.max_it >= cfg.f.it_inc {
+                    if cfg.f.max_it > cfg.f.it_inc {
                         cfg.f.max_it -= cfg.f.it_inc
                     }
                 }

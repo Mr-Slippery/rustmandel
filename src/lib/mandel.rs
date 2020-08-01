@@ -4,7 +4,7 @@ use crate::lib::dyn_sys::DDS;
 use crate::lib::dyn_sys::IFS;
 
 pub struct Mandelbrot {
-    max_iter: u64,
+    pub max_iter: u64,
 }
 
 // Iterated Function System
@@ -30,13 +30,16 @@ impl IFS<Complex<f64>, u64> for Mandelbrot {
     }
 }
 
+use crate::lib::num_traits::Zero;
+use std::ops::Rem;
+
 // This implementation corresponds to the Mandelbrot fractal.
 impl DDS<Complex<f64>> for Mandelbrot {
     #[inline]
     fn cont(&self, z: Complex<f64>) -> bool {
         z.norm_sqr() <= 4.0
     }
-    
+
     #[inline]
     fn next(&self, z: Complex<f64>, c: Complex<f64>) -> Complex<f64> {
         z * z + c
