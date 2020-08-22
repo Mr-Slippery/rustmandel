@@ -24,7 +24,7 @@
         {
             "label": "cargo release",
             "type": "shell",
-            "command": "cargo run --release ${file}",
+            "command": "cargo run --release --quiet ${file}",
             "group": {
                 "kind": "build",
                 "isDefault": true
