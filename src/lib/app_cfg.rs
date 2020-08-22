@@ -41,8 +41,12 @@ pub struct WindowConfig {
     pub size_inc: f64,
 }
 
+fn default_buddhabrot_points() -> u64 {
+    500000
+}
+
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
-pub struct FractalConfig {
+pub struct FractalConfig {    
     pub min: Complex<f64>,
     pub max: Complex<f64>,
     pub max_it: u64,
@@ -51,7 +55,9 @@ pub struct FractalConfig {
     pub zoom_factor: f64,
     pub fractal: Fractal,
     pub fractal_type: FractalType,
-    pub color_scheme: ColorScheme,    
+    pub color_scheme: ColorScheme,
+    #[serde(default = "default_buddhabrot_points")]
+    pub buddhabrot_points: u64,
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
@@ -63,6 +69,7 @@ pub struct AppConfig {
 pub const SAVE_DIR: &str = "save";
 pub const CFG_DIR: &str = "cfg";
 pub const IMAGE_DIR: &str = "image";
+pub const RECORDING_DIR: &str = "rec";
 pub const THUMB_DIR: &str = "thumb";
 pub const DEFAULT_CFG: &str = "Settings.toml";
 const THUMB_SUFFIX: &str = "_thumb.png";
@@ -87,9 +94,12 @@ impl AppConfig {
         thumb_dir.push(THUMB_DIR);
         let mut image_dir = PathBuf::from(SAVE_DIR);
         image_dir.push(IMAGE_DIR);
+        let mut rec_dir = PathBuf::from(SAVE_DIR);
+        rec_dir.push(RECORDING_DIR);
         fs::create_dir_all(image_dir)?;
         fs::create_dir_all(thumb_dir)?;
         fs::create_dir_all(cfg_dir)?;
+        fs::create_dir_all(rec_dir)?;
         Ok(())
     }
 
@@ -100,7 +110,16 @@ impl AppConfig {
         p.push(name);
         p.to_str().unwrap().to_string()
     }
-    
+
+    pub fn recorded_path(self, index: u64) -> String {
+        let mut rec_dir = PathBuf::from(SAVE_DIR);
+        rec_dir.push(RECORDING_DIR);
+        let name = format!("{:?}", self.f.fractal);
+        rec_dir.push(&name);
+        fs::create_dir_all(&rec_dir).expect(&format!("Failed to mkdir `{}`!", &rec_dir.as_path().display()));
+        self.path(format!("{}/{}", SAVE_DIR.to_string(), RECORDING_DIR.to_string()), name, format!("{}{}", index, IMAGE_SUFFIX))
+    }
+
     pub fn image_path(self) -> String {
         self.path(SAVE_DIR.to_string(), IMAGE_DIR.to_string(), format!("{}{}", self.name(), IMAGE_SUFFIX))
     }

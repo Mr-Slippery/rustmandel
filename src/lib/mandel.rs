@@ -32,6 +32,7 @@ impl IFS<Complex<f64>, u64> for Mandelbrot {
 
 use crate::lib::num_traits::Zero;
 use std::ops::Rem;
+use crate::lib::num_traits::MulAdd;
 
 // This implementation corresponds to the Mandelbrot fractal.
 impl DDS<Complex<f64>> for Mandelbrot {

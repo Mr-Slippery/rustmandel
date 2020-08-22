@@ -19,3 +19,4 @@ zoom_factor = 1.25
 fractal = 'Mandelbrot'
 fractal_type = 'Mandelbrot'
 color_scheme = 'Silver'
+buddhabrot_points = 5000000
