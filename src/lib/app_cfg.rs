@@ -45,6 +45,10 @@ fn default_buddhabrot_points() -> u64 {
     500000
 }
 
+fn default_buddhabrot_rel_size() -> f64 {
+    2.0
+}
+
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
 pub struct FractalConfig {    
     pub min: Complex<f64>,
@@ -56,6 +60,8 @@ pub struct FractalConfig {
     pub fractal: Fractal,
     pub fractal_type: FractalType,
     pub color_scheme: ColorScheme,
+    #[serde(default = "default_buddhabrot_rel_size")]
+    pub buddhabrot_rel_size: f64,
     #[serde(default = "default_buddhabrot_points")]
     pub buddhabrot_points: u64,
 }

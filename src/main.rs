@@ -69,17 +69,17 @@ fn render_mandel(c: &AppConfig,
 
 #[inline]
 fn render_buddha(c: &AppConfig,
-                 canvas: & mut im::RgbaImage, buddhabrot_points: u64) {
+                 canvas: & mut im::RgbaImage) {
     let bud = Buddhabrot::new(c.f.max_it);
     let d_x = canvas.width();
     let d_y = canvas.height();
     let mut rng = rand::thread_rng();
-    for _ in 0..buddhabrot_points {
+    for _ in 0..c.f.buddhabrot_points {
         let d_re = c.f.max.re - c.f.min.re;
         let d_im = c.f.max.im - c.f.min.im;
-        let f = 0.5;
-        let x: f64 = c.f.min.re - f * d_re + (2.0 * f + 1.0) * d_re * rng.gen::<f64>();
-        let y: f64 = c.f.min.im - f * d_im + (2.0 * f + 1.0) * d_im * rng.gen::<f64>();
+        let buddha_rel_size = c.f.buddhabrot_rel_size;
+        let x: f64 = c.f.min.re - buddha_rel_size * d_re + (2.0 * buddha_rel_size + 1.0) * d_re * rng.gen::<f64>();
+        let y: f64 = c.f.min.im - buddha_rel_size * d_im + (2.0 * buddha_rel_size + 1.0) * d_im * rng.gen::<f64>();
         let p = Complex::new(x, y);
         let m: Vec<Complex<f64>>;
         match c.f.fractal_type {
@@ -147,6 +147,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let zoom_factor_inc = 0.01;
 
     let bp_inc = 100000;
+    let brs_inc = 0.1;
 
     let mut x: f64 = 0.0;
     let mut y: f64 = 0.0;
@@ -282,6 +283,21 @@ fn main() -> Result<(), Box<dyn Error>> {
                         cfg.f.max_it = 0
                     }
                 }
+                // Increase/decrease Buddhabrot complex interval scale size.
+                Button::Keyboard(Key::P) => {
+                    cfg.f.buddhabrot_rel_size += brs_inc;
+                    println!("Increased buddhabrot rel size to: {}.", cfg.f.buddhabrot_rel_size);
+                    draw = false
+                }
+                Button::Keyboard(Key::O) => {
+                    if cfg.f.buddhabrot_rel_size >= brs_inc {
+                        cfg.f.buddhabrot_rel_size -= brs_inc;
+                        println!("Decreased buddhabrot rel size to: {}.", cfg.f.buddhabrot_rel_size)
+                    } else {
+                        cfg.f.buddhabrot_rel_size = 0.0
+                    }
+                    draw = false
+                }
                 // Increase/decrease Buddhabrot points.
                 Button::Keyboard(Key::Period) => {
                     cfg.f.buddhabrot_points += bp_inc;
@@ -338,7 +354,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     smallcfg.w.height = thumb_size;
                     match smallcfg.f.fractal {
                         Fractal::Mandelbrot => render_mandel(&smallcfg, & mut thumb),
-                        Fractal::Buddhabrot => render_buddha(&smallcfg, & mut thumb, cfg.f.buddhabrot_points)
+                        Fractal::Buddhabrot => render_buddha(&smallcfg, & mut thumb)
                     }
                     let filename = smallcfg.thumb_path();
                     thumb.save(&filename).expect(&format!("Failed to write: `{}/{}`!", path.display(), filename));
@@ -399,7 +415,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
 
             match cfg.f.fractal {
-                Fractal::Buddhabrot => render_buddha(&cfg, & mut canvas, cfg.f.buddhabrot_points),
+                Fractal::Buddhabrot => render_buddha(&cfg, & mut canvas),
                 Fractal::Mandelbrot => render_mandel(&cfg, & mut canvas)
             }
 
