@@ -32,7 +32,8 @@ fn render_mandel(c: &AppConfig,
         }
         return;
     }
-    let mandel = Mandelbrot::new(c.f.max_it);
+    let mandel = Mandelbrot::new_power_norm(c.f.max_it, c.f.power, c.f.max_norm);
+    
     for j in 0..d_y {
         for i in 0..d_x {
             let x = c.f.min.re + (c.f.max.re - c.f.min.re) * (i as f64) / (d_x as f64);
@@ -50,8 +51,9 @@ fn render_mandel(c: &AppConfig,
                     canvas.put_pixel(i, j, im::Rgba([col, col, col, 255]))
                 }
                 ColorScheme::Red => {
-                    let col = ((m * 8) % 256) as u8;
-                    canvas.put_pixel(i, j, im::Rgba([col, 0, 0, 255]))
+                    //let col = ((m * 8) % 256) as u8;
+                    let col = if m == 0 { 0 } else { 255 };
+                    canvas.put_pixel(i, j, im::Rgba([col, col, col, 255]))
                 }
                 ColorScheme::Times2232 => {
                     let col = ((m * 2) % 256) as u8;
@@ -70,7 +72,7 @@ fn render_mandel(c: &AppConfig,
 #[inline]
 fn render_buddha(c: &AppConfig,
                  canvas: & mut im::RgbaImage) {
-    let bud = Buddhabrot::new(c.f.max_it);
+    let bud = Buddhabrot::new_power_norm(c.f.max_it, c.f.power, c.f.max_norm);
     let d_x = canvas.width();
     let d_y = canvas.height();
     let mut rng = rand::thread_rng();
@@ -115,6 +117,7 @@ fn add_file(name: &str) -> String {
     header + &comment + &contents.replace("\n", &comment_copy)
 }
 
+
 fn main() -> Result<(), Box<dyn Error>> {
     let path = env::current_dir()?;
     let args: Vec<String> = env::args().collect();
@@ -148,6 +151,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let bp_inc = 100000;
     let brs_inc = 0.1;
+
+    let max_norm_factor = 0.2;
+    let move_inc_rate_factor = 0.1;
+    let power_inc = 1;
 
     let mut x: f64 = 0.0;
     let mut y: f64 = 0.0;
@@ -187,6 +194,24 @@ fn main() -> Result<(), Box<dyn Error>> {
         if let Some(button) = e.press_args() {
             draw = true;
             match button {
+                Button::Keyboard(Key::D5) => {
+                    if cfg.f.max_norm > 0.0 {
+                        cfg.f.max_norm -= max_norm_factor * cfg.f.max_norm;
+                        println!("Decreased max_norm: {}.", cfg.f.max_norm)
+                    }
+                }
+                Button::Keyboard(Key::D6) => {
+                    cfg.f.max_norm += max_norm_factor * cfg.f.max_norm;
+                    println!("Increased max_norm: {}.", cfg.f.max_norm)
+                }
+                Button::Keyboard(Key::D7) => {
+                    if cfg.f.power > 0 { cfg.f.power -= power_inc }
+                    println!("Power: {}", cfg.f.power)
+                }
+                Button::Keyboard(Key::D8) => {
+                    cfg.f.power += power_inc;
+                    println!("Power: {}", cfg.f.power)
+                }
                 // Zoom
                 Button::Mouse(MouseButton::Left) => zoom = Zoom::In,
                 Button::Mouse(MouseButton::Right) => zoom = Zoom::Out,
@@ -240,13 +265,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
                 Button::Keyboard(Key::LShift) => {
                     if cfg.f.move_inc_rate > 0.0 {
-                        cfg.f.move_inc_rate -= 0.1 * cfg.f.move_inc_rate;
+                        cfg.f.move_inc_rate -= move_inc_rate_factor * cfg.f.move_inc_rate;
                         println!("Decreased move_inc_rate to: {}.", cfg.f.move_inc_rate)
                     }
                     draw = false
                 }
                 Button::Keyboard(Key::RShift) => {
-                    cfg.f.move_inc_rate += 0.1 * cfg.f.move_inc_rate;                    
+                    cfg.f.move_inc_rate += move_inc_rate_factor * cfg.f.move_inc_rate;                    
                     println!("Increased move_inc_rate to: {}.", cfg.f.move_inc_rate);
                     draw = false
                 }

@@ -49,6 +49,14 @@ fn default_buddhabrot_rel_size() -> f64 {
     2.0
 }
 
+pub fn default_power() -> i32 {
+    1
+}
+
+pub fn default_max_norm() -> f64 {
+    4.0
+}
+
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
 pub struct FractalConfig {    
     pub min: Complex<f64>,
@@ -60,6 +68,10 @@ pub struct FractalConfig {
     pub fractal: Fractal,
     pub fractal_type: FractalType,
     pub color_scheme: ColorScheme,
+    #[serde(default = "default_power")]
+    pub power: i32,
+    #[serde(default = "default_max_norm")]
+    pub max_norm: f64,
     #[serde(default = "default_buddhabrot_rel_size")]
     pub buddhabrot_rel_size: f64,
     #[serde(default = "default_buddhabrot_points")]
@@ -83,7 +95,7 @@ const IMAGE_SUFFIX: &str = ".png";
 const CFG_SUFFIX: &str = ".cfg";
 
 impl AppConfig {
-
+    
     fn name(self) -> String {
         format!("min_re_{}_min_im_{}_max_re_{}_max_im_{}_max_it_{}_fractal_{:?}_fractal_type_{:?}_color_scheme_{:?}",
             self.f.min.re, self.f.min.im, self.f.max.re, self.f.max.im,
