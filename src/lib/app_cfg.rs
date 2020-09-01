@@ -4,8 +4,8 @@ use std::path::PathBuf;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-use serde::{Serialize, Deserialize};
 use num::complex::Complex;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Copy, Clone, FromPrimitive, Serialize, Deserialize)]
 pub enum ColorScheme {
@@ -31,7 +31,7 @@ pub enum FractalType {
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum Fractal {
     Mandelbrot,
-    Buddhabrot
+    Buddhabrot,
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
@@ -58,7 +58,7 @@ pub fn default_max_norm() -> f64 {
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
-pub struct FractalConfig {    
+pub struct FractalConfig {
     pub min: Complex<f64>,
     pub max: Complex<f64>,
     pub max_it: u64,
@@ -81,7 +81,7 @@ pub struct FractalConfig {
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
 pub struct AppConfig {
     pub w: WindowConfig,
-    pub f: FractalConfig, 
+    pub f: FractalConfig,
 }
 
 pub const SAVE_DIR: &str = "save";
@@ -95,7 +95,6 @@ const IMAGE_SUFFIX: &str = ".png";
 const CFG_SUFFIX: &str = ".cfg";
 
 impl AppConfig {
-    
     fn name(self) -> String {
         format!("min_re_{}_min_im_{}_max_re_{}_max_im_{}_max_it_{}_fractal_{:?}_fractal_type_{:?}_color_scheme_{:?}",
             self.f.min.re, self.f.min.im, self.f.max.re, self.f.max.im,
@@ -134,27 +133,45 @@ impl AppConfig {
         rec_dir.push(RECORDING_DIR);
         let name = format!("{:?}", self.f.fractal);
         rec_dir.push(&name);
-        fs::create_dir_all(&rec_dir).expect(&format!("Failed to mkdir `{}`!", &rec_dir.as_path().display()));
-        self.path(format!("{}/{}", SAVE_DIR.to_string(), RECORDING_DIR.to_string()), name, format!("{}{}", index, IMAGE_SUFFIX))
+        fs::create_dir_all(&rec_dir).expect(&format!(
+            "Failed to mkdir `{}`!",
+            &rec_dir.as_path().display()
+        ));
+        self.path(
+            format!("{}/{}", SAVE_DIR.to_string(), RECORDING_DIR.to_string()),
+            name,
+            format!("{}{}", index, IMAGE_SUFFIX),
+        )
     }
 
     pub fn image_path(self) -> String {
-        self.path(SAVE_DIR.to_string(), IMAGE_DIR.to_string(), format!("{}{}", self.name(), IMAGE_SUFFIX))
+        self.path(
+            SAVE_DIR.to_string(),
+            IMAGE_DIR.to_string(),
+            format!("{}{}", self.name(), IMAGE_SUFFIX),
+        )
     }
 
     pub fn cfg_path(self) -> String {
-        self.path(SAVE_DIR.to_string(), CFG_DIR.to_string(), format!("{}{}", self.name(), CFG_SUFFIX))
+        self.path(
+            SAVE_DIR.to_string(),
+            CFG_DIR.to_string(),
+            format!("{}{}", self.name(), CFG_SUFFIX),
+        )
     }
 
     pub fn thumb_path(self) -> String {
-        self.path(SAVE_DIR.to_string(), THUMB_DIR.to_string(), format!("{}{}", self.name(), THUMB_SUFFIX))
+        self.path(
+            SAVE_DIR.to_string(),
+            THUMB_DIR.to_string(),
+            format!("{}{}", self.name(), THUMB_SUFFIX),
+        )
     }
 
     fn cfg_name(arg: &String) -> String {
         let path = std::path::PathBuf::from(&arg);
         let basename = path.file_name().unwrap().to_str().unwrap();
-        let mut root = 
-            path.parent().unwrap().parent().unwrap().to_path_buf();
+        let mut root = path.parent().unwrap().parent().unwrap().to_path_buf();
         root.push(CFG_DIR);
         if arg.ends_with(CFG_SUFFIX) {
             arg.clone()
@@ -181,10 +198,10 @@ impl AppConfig {
         let app_config_str = fs::read_to_string(cfg_filename)
             .expect(&format!("Something went wrong reading {}", cfg_filename1));
         let cfg: AppConfig = toml::from_str(&app_config_str).unwrap();
-        return cfg
+        return cfg;
     }
 
     pub fn default() -> AppConfig {
-        Self::from(&Self::default_cfg())    
+        Self::from(&Self::default_cfg())
     }
 }

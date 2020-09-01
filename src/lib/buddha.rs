@@ -3,20 +3,23 @@ use num::complex::Complex;
 use crate::lib::dyn_sys::DDS;
 use crate::lib::dyn_sys::IFS;
 
-use super::app_cfg::{default_power, default_max_norm};
+use super::app_cfg::{default_max_norm, default_power};
 use super::mandel_base::MandelBase;
 
 pub struct Buddhabrot {
-    base: MandelBase
+    base: MandelBase,
 }
 
 // Iterated Function System
 impl Buddhabrot {
     pub fn new(max_iter: u64) -> Self {
-        Buddhabrot { base: MandelBase {
-                        max_iter: max_iter, power: default_power(),
-                        max_norm: default_max_norm() 
-                    }}
+        Buddhabrot {
+            base: MandelBase {
+                max_iter: max_iter,
+                power: default_power(),
+                max_norm: default_max_norm(),
+            },
+        }
     }
 
     pub fn new_power_norm(max_iter: u64, power: i32, max_norm: f64) -> Self {

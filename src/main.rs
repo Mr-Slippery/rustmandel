@@ -1,14 +1,14 @@
+use num::complex::Complex;
+use rand::prelude::*;
+use std::env;
 use std::error::Error;
 use std::fs;
-use num::complex::Complex;
-use std::env;
-use rand::prelude::*;
 
 mod lib;
+use lib::app_cfg::{AppConfig, ColorScheme, Fractal, FractalType};
+use lib::buddha::Buddhabrot;
 use lib::dyn_sys::IFS;
 use lib::mandel::Mandelbrot;
-use lib::buddha::Buddhabrot;
-use lib::app_cfg::{AppConfig, Fractal, FractalType, ColorScheme};
 use lib::*;
 
 enum Zoom {
@@ -20,8 +20,7 @@ enum Zoom {
 use num_traits::Zero;
 
 #[inline]
-fn render_mandel(c: &AppConfig,
-                 canvas: & mut im::RgbaImage) {        
+fn render_mandel(c: &AppConfig, canvas: &mut im::RgbaImage) {
     let d_x = canvas.width();
     let d_y = canvas.height();
     if c.f.max_it == 0 {
@@ -33,7 +32,6 @@ fn render_mandel(c: &AppConfig,
         return;
     }
     let mandel = Mandelbrot::new_power_norm(c.f.max_it, c.f.power, c.f.max_norm);
-    
     for j in 0..d_y {
         for i in 0..d_x {
             let x = c.f.min.re + (c.f.max.re - c.f.min.re) * (i as f64) / (d_x as f64);
@@ -42,9 +40,9 @@ fn render_mandel(c: &AppConfig,
             let m1: u64;
             match c.f.fractal_type {
                 FractalType::Mandelbrot => m1 = mandel.iter(Complex::zero(), p),
-                FractalType::Julia => m1 = mandel.iter(p, Complex::new(-0.70, -0.33))
+                FractalType::Julia => m1 = mandel.iter(p, Complex::new(-0.70, -0.33)),
             }
-            let m = m1 * 256 / c.f.max_it; 
+            let m = m1 * 256 / c.f.max_it;
             match c.f.color_scheme {
                 ColorScheme::Silver => {
                     let col = ((m * 8) % 256) as u8;
@@ -70,8 +68,7 @@ fn render_mandel(c: &AppConfig,
 }
 
 #[inline]
-fn render_buddha(c: &AppConfig,
-                 canvas: & mut im::RgbaImage) {
+fn render_buddha(c: &AppConfig, canvas: &mut im::RgbaImage) {
     let bud = Buddhabrot::new_power_norm(c.f.max_it, c.f.power, c.f.max_norm);
     let d_x = canvas.width();
     let d_y = canvas.height();
@@ -80,19 +77,25 @@ fn render_buddha(c: &AppConfig,
         let d_re = c.f.max.re - c.f.min.re;
         let d_im = c.f.max.im - c.f.min.im;
         let buddha_rel_size = c.f.buddhabrot_rel_size;
-        let x: f64 = c.f.min.re - buddha_rel_size * d_re + (2.0 * buddha_rel_size + 1.0) * d_re * rng.gen::<f64>();
-        let y: f64 = c.f.min.im - buddha_rel_size * d_im + (2.0 * buddha_rel_size + 1.0) * d_im * rng.gen::<f64>();
+        let x: f64 = c.f.min.re - buddha_rel_size * d_re
+            + (2.0 * buddha_rel_size + 1.0) * d_re * rng.gen::<f64>();
+        let y: f64 = c.f.min.im - buddha_rel_size * d_im
+            + (2.0 * buddha_rel_size + 1.0) * d_im * rng.gen::<f64>();
         let p = Complex::new(x, y);
         let m: Vec<Complex<f64>>;
         match c.f.fractal_type {
             FractalType::Mandelbrot => m = bud.iter(Complex::zero(), p),
-            FractalType::Julia => m = bud.iter(p, Complex::new(-0.70, -0.33))
+            FractalType::Julia => m = bud.iter(p, Complex::new(-0.70, -0.33)),
         }
         for z in m {
             let px = (d_x as f64 * (z.re - c.f.min.re) / d_re) as u32;
-            if px >= d_x { continue }
+            if px >= d_x {
+                continue;
+            }
             let py = (d_y as f64 * (z.im - c.f.min.im) / d_im) as u32;
-            if py >= d_y { continue }
+            if py >= d_y {
+                continue;
+            }
             let pixel = canvas.get_pixel_mut(px, py);
             let rgba = pixel.0;
             let r = if rgba[0] < 255 { rgba[0] + 1 } else { rgba[0] };
@@ -109,14 +112,13 @@ fn add_file(name: &str) -> String {
     let mut src = PathBuf::from("src");
     src.push("lib");
     src.push(name);
-    let contents = fs::read_to_string(src.to_str().unwrap())
-        .expect(&format!("Error reading {}.", name));
+    let contents =
+        fs::read_to_string(src.to_str().unwrap()).expect(&format!("Error reading {}.", name));
     let header = format!("\n\n#// {}: ", name);
     let comment: String = "\n#".to_string();
     let comment_copy = comment.clone();
     header + &comment + &contents.replace("\n", &comment_copy)
 }
-
 
 fn main() -> Result<(), Box<dyn Error>> {
     let path = env::current_dir()?;
@@ -205,7 +207,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                     println!("Increased max_norm: {}.", cfg.f.max_norm)
                 }
                 Button::Keyboard(Key::D7) => {
-                    if cfg.f.power > 0 { cfg.f.power -= power_inc }
+                    if cfg.f.power > 0 {
+                        cfg.f.power -= power_inc
+                    }
                     println!("Power: {}", cfg.f.power)
                 }
                 Button::Keyboard(Key::D8) => {
@@ -219,7 +223,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 Button::Keyboard(Key::X) => {
                     let d_x = canvas.width();
                     let d_y = canvas.height();
-                    let p = im::Rgba([0,0,0,255]);
+                    let p = im::Rgba([0, 0, 0, 255]);
                     for i in 0..d_x {
                         for j in 0..d_y {
                             canvas.put_pixel(i, j, p)
@@ -271,7 +275,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     draw = false
                 }
                 Button::Keyboard(Key::RShift) => {
-                    cfg.f.move_inc_rate += move_inc_rate_factor * cfg.f.move_inc_rate;                    
+                    cfg.f.move_inc_rate += move_inc_rate_factor * cfg.f.move_inc_rate;
                     println!("Increased move_inc_rate to: {}.", cfg.f.move_inc_rate);
                     draw = false
                 }
@@ -283,7 +287,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     draw = false
                 }
                 Button::Keyboard(Key::Backslash) => {
-                    cfg.f.it_inc += 1;                    
+                    cfg.f.it_inc += 1;
                     println!("Increased it_inc to: {}.", cfg.f.it_inc);
                     draw = false
                 }
@@ -311,13 +315,19 @@ fn main() -> Result<(), Box<dyn Error>> {
                 // Increase/decrease Buddhabrot complex interval scale size.
                 Button::Keyboard(Key::P) => {
                     cfg.f.buddhabrot_rel_size += brs_inc;
-                    println!("Increased buddhabrot rel size to: {}.", cfg.f.buddhabrot_rel_size);
+                    println!(
+                        "Increased buddhabrot rel size to: {}.",
+                        cfg.f.buddhabrot_rel_size
+                    );
                     draw = false
                 }
                 Button::Keyboard(Key::O) => {
                     if cfg.f.buddhabrot_rel_size >= brs_inc {
                         cfg.f.buddhabrot_rel_size -= brs_inc;
-                        println!("Decreased buddhabrot rel size to: {}.", cfg.f.buddhabrot_rel_size)
+                        println!(
+                            "Decreased buddhabrot rel size to: {}.",
+                            cfg.f.buddhabrot_rel_size
+                        )
                     } else {
                         cfg.f.buddhabrot_rel_size = 0.0
                     }
@@ -326,13 +336,19 @@ fn main() -> Result<(), Box<dyn Error>> {
                 // Increase/decrease Buddhabrot points.
                 Button::Keyboard(Key::Period) => {
                     cfg.f.buddhabrot_points += bp_inc;
-                    println!("Increased buddhabrot points to: {}.", cfg.f.buddhabrot_points);
+                    println!(
+                        "Increased buddhabrot points to: {}.",
+                        cfg.f.buddhabrot_points
+                    );
                     draw = false
                 }
                 Button::Keyboard(Key::Comma) => {
                     if cfg.f.buddhabrot_points >= bp_inc {
                         cfg.f.buddhabrot_points -= bp_inc;
-                        println!("Decreased buddhabrot points to: {}.", cfg.f.buddhabrot_points)
+                        println!(
+                            "Decreased buddhabrot points to: {}.",
+                            cfg.f.buddhabrot_points
+                        )
                     } else {
                         cfg.f.buddhabrot_points = 0
                     }
@@ -342,18 +358,20 @@ fn main() -> Result<(), Box<dyn Error>> {
                 Button::Keyboard(Key::M) => cfg.f.fractal = Fractal::Mandelbrot,
                 Button::Keyboard(Key::B) => cfg.f.fractal = Fractal::Buddhabrot,
                 // Flip Mandelbrot/Julia fractal type.
-                Button::Keyboard(Key::J) => 
+                Button::Keyboard(Key::J) => {
                     cfg.f.fractal_type = match cfg.f.fractal_type {
-                            FractalType::Julia => FractalType::Mandelbrot,
-                            FractalType::Mandelbrot => FractalType::Julia
-                    },
+                        FractalType::Julia => FractalType::Mandelbrot,
+                        FractalType::Mandelbrot => FractalType::Julia,
+                    }
+                }
                 // Save image to file.
                 Button::Keyboard(Key::S) => {
-                    let filename = format!(
-                        "{}",
-                        cfg.image_path()
-                    );
-                    let _ = canvas.save(&filename).expect(&format!("Failed to write: `{}/{}`.", path.display(), filename));
+                    let filename = format!("{}", cfg.image_path());
+                    let _ = canvas.save(&filename).expect(&format!(
+                        "Failed to write: `{}/{}`.",
+                        path.display(),
+                        filename
+                    ));
                     println!("Saved image: `{}/{}`.", path.display(), filename);
                     draw = false
                 }
@@ -361,15 +379,17 @@ fn main() -> Result<(), Box<dyn Error>> {
                 Button::Keyboard(Key::F) => {
                     // Save the config.
 
-                    let out_cfg_str = format!("{}{}", toml::to_string_pretty(&cfg).unwrap(),
-                    match cfg.f.fractal {
-                        Fractal::Mandelbrot => add_file("mandel.rs"),
-                        Fractal::Buddhabrot => add_file("buddha.rs")
-                    });
+                    let out_cfg_str = format!(
+                        "{}{}",
+                        toml::to_string_pretty(&cfg).unwrap(),
+                        match cfg.f.fractal {
+                            Fractal::Mandelbrot => add_file("mandel.rs"),
+                            Fractal::Buddhabrot => add_file("buddha.rs"),
+                        }
+                    );
                     let name = cfg.cfg_path();
                     let name1 = name.clone();
-                    fs::write(name, &out_cfg_str)
-                        .expect("Failed to write config!");
+                    fs::write(name, &out_cfg_str).expect("Failed to write config!");
                     println!("Wrote config: `{}/{}`.", path.display(), name1);
                     // Save a thumbnail.
                     let thumb_size = 100;
@@ -378,15 +398,21 @@ fn main() -> Result<(), Box<dyn Error>> {
                     smallcfg.w.width = thumb_size;
                     smallcfg.w.height = thumb_size;
                     match smallcfg.f.fractal {
-                        Fractal::Mandelbrot => render_mandel(&smallcfg, & mut thumb),
-                        Fractal::Buddhabrot => render_buddha(&smallcfg, & mut thumb)
+                        Fractal::Mandelbrot => render_mandel(&smallcfg, &mut thumb),
+                        Fractal::Buddhabrot => render_buddha(&smallcfg, &mut thumb),
                     }
                     let filename = smallcfg.thumb_path();
-                    thumb.save(&filename).expect(&format!("Failed to write: `{}/{}`!", path.display(), filename));
+                    thumb.save(&filename).expect(&format!(
+                        "Failed to write: `{}/{}`!",
+                        path.display(),
+                        filename
+                    ));
                     draw = false
                 }
                 // Alter the color scheme.
-                Button::Keyboard(Key::D0) => cfg.f.color_scheme = lib::app_cfg::next(cfg.f.color_scheme),
+                Button::Keyboard(Key::D0) => {
+                    cfg.f.color_scheme = lib::app_cfg::next(cfg.f.color_scheme)
+                }
                 // Resize window
                 Button::Keyboard(Key::D1) => {
                     if size.height >= cfg.w.size_inc && size.width >= cfg.w.size_inc {
@@ -430,8 +456,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             if mult != 1.0 {
                 let interval = cfg.f.max - cfg.f.min;
-                let cxy =
-                    cfg.f.min + Complex::new(x * interval.re / size.width, y * interval.im / size.height);
+                let cxy = cfg.f.min
+                    + Complex::new(x * interval.re / size.width, y * interval.im / size.height);
 
                 let new_interval = interval * mult;
 
@@ -440,17 +466,18 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
 
             match cfg.f.fractal {
-                Fractal::Buddhabrot => render_buddha(&cfg, & mut canvas),
-                Fractal::Mandelbrot => render_mandel(&cfg, & mut canvas)
+                Fractal::Buddhabrot => render_buddha(&cfg, &mut canvas),
+                Fractal::Mandelbrot => render_mandel(&cfg, &mut canvas),
             }
 
             if recording {
                 recording_index += 1;
-                let filename = format!(
-                    "{}",
-                    cfg.recorded_path(recording_index)
-                );
-                let _ = canvas.save(&filename).expect(&format!("Failed to write: `{}/{}`.", path.display(), filename));
+                let filename = format!("{}", cfg.recorded_path(recording_index));
+                let _ = canvas.save(&filename).expect(&format!(
+                    "Failed to write: `{}/{}`.",
+                    path.display(),
+                    filename
+                ));
                 println!("Saved image: `{}/{}`.", path.display(), filename);
             }
         }

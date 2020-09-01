@@ -7,17 +7,19 @@ use super::app_cfg::{default_max_norm, default_power};
 use super::mandel_base::MandelBase;
 
 pub struct Mandelbrot {
-    base: MandelBase
+    base: MandelBase,
 }
 
 // Iterated Function System
 impl Mandelbrot {
     pub fn new(max_iter: u64) -> Self {
-        Mandelbrot { base: MandelBase {
-                        max_iter: max_iter,
-                        power: default_power(),
-                        max_norm: default_max_norm()
-                    }}
+        Mandelbrot {
+            base: MandelBase {
+                max_iter: max_iter,
+                power: default_power(),
+                max_norm: default_max_norm(),
+            },
+        }
     }
 
     pub fn new_power_norm(max_iter: u64, power: i32, max_norm: f64) -> Self {
