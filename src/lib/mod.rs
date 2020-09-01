@@ -8,5 +8,6 @@ pub extern crate rand;
 
 pub mod app_cfg;
 pub mod dyn_sys;
+pub mod mandel_base;
 pub mod mandel;
 pub mod buddha;
