@@ -94,13 +94,16 @@ const THUMB_SUFFIX: &str = "_thumb.png";
 const IMAGE_SUFFIX: &str = ".png";
 const CFG_SUFFIX: &str = ".cfg";
 
+use chrono::Utc;
+
 impl AppConfig {
     fn name(self) -> String {
-        format!("min_re_{}_min_im_{}_max_re_{}_max_im_{}_max_it_{}_fractal_{:?}_fractal_type_{:?}_color_scheme_{:?}",
+        format!("min_re_{}_min_im_{}_max_re_{}_max_im_{}_max_it_{}_fractal_{:?}_fractal_type_{:?}_color_scheme_{:?}_{:?}",
             self.f.min.re, self.f.min.im, self.f.max.re, self.f.max.im,
             self.f.max_it,
             self.f.fractal, self.f.fractal_type,
-            self.f.color_scheme
+            self.f.color_scheme,
+            Utc::now().timestamp()
         )
     }
 
