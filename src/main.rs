@@ -50,8 +50,10 @@ fn render_mandel(c: &AppConfig, canvas: &mut im::RgbaImage) {
                 }
                 ColorScheme::Red => {
                     //let col = ((m * 8) % 256) as u8;
-                    let col = if m == 0 { 0 } else { 255 };
-                    canvas.put_pixel(i, j, im::Rgba([col, col, col, 255]))
+                    let col = m as u8;
+                    // let c1 = ((col as f64/255.0).sin() * 255.0) as u8; 
+                    // let c2 = ((col as f64/255.0).cos() * 255.0) as u8; 
+                    canvas.put_pixel(i, j, im::Rgba([col, 0, 0, 255]))
                 }
                 ColorScheme::Times2232 => {
                     let col = ((m * 2) % 256) as u8;
@@ -99,8 +101,8 @@ fn render_buddha(c: &AppConfig, canvas: &mut im::RgbaImage) {
             let pixel = canvas.get_pixel_mut(px, py);
             let rgba = pixel.0;
             let r = if rgba[0] < 255 { rgba[0] + 1 } else { rgba[0] };
-            let g = if rgba[1] < 254 { rgba[1] + 2 } else { rgba[1] };
-            let b = if rgba[2] < 253 { rgba[2] + 3 } else { rgba[2] };
+            let g = if rgba[1] < 254 { rgba[1] + 1 } else { rgba[1] };
+            let b = if rgba[2] < 253 { rgba[2] + 1 } else { rgba[2] };
             *pixel = im::Rgba([r, g, b, 255]);
         }
     }
@@ -132,12 +134,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     AppConfig::make_saves_dir()?;
     let opengl = OpenGL::V3_2;
+
     let mut window: PistonWindow = WindowSettings::new("Mandelbrot", (cfg.w.width, cfg.w.height))
         .resizable(true)
         .exit_on_esc(true)
         .graphics_api(opengl)
         .build()
         .unwrap();
+    
     let mut canvas = im::ImageBuffer::new(cfg.w.width, cfg.w.height);
     let mut texture_context = TextureContext {
         factory: window.factory.clone(),
@@ -154,7 +158,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let bp_inc = 100000;
     let brs_inc = 0.1;
 
-    let max_norm_factor = 0.2;
+    let max_norm_factor = 0.03;
     let move_inc_rate_factor = 0.1;
     let power_inc = 1;
 
@@ -169,6 +173,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         let size = window.size();
 
         if let Some(_) = e.render_args() {
+            texture_context = TextureContext {
+                factory: window.factory.clone(),
+                encoder: window.factory.create_command_buffer().into(),
+            };
             texture.update(&mut texture_context, &canvas).unwrap();
             window.draw_2d(&e, |c, g, device| {
                 // Update texture before rendering.
@@ -176,6 +184,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 clear([1.0; 4], g);
                 image(&texture, c.transform, g)
             });
+
         }
 
         if let Some(_) = e.resize_args() {
