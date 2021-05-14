@@ -55,8 +55,8 @@ fn render_mandel(c: &AppConfig, canvas: &mut im::RgbaImage) {
                 ColorScheme::Red => {
                     //let col = ((m * 8) % 256) as u8;
                     let col = m as u8;
-                    // let c1 = ((col as f64/255.0).sin() * 255.0) as u8; 
-                    // let c2 = ((col as f64/255.0).cos() * 255.0) as u8; 
+                    // let c1 = ((col as f64/255.0).sin() * 255.0) as u8;
+                    // let c2 = ((col as f64/255.0).cos() * 255.0) as u8;
                     canvas.put_pixel(i, j, im::Rgba([col, 0, 0, 255]))
                 }
                 ColorScheme::Times2232 => {
@@ -146,7 +146,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .graphics_api(opengl)
         .build()
         .unwrap();
-    
+
     let mut canvas = im::ImageBuffer::new(cfg.w.width, cfg.w.height);
     let mut texture_context = TextureContext {
         factory: window.factory.clone(),
@@ -468,7 +468,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
             zoom = Zoom::None;
 
-            if mult != 1.0 {
+            if (mult - 1.0).abs() > 0.000001 {
                 let interval = cfg.f.max - cfg.f.min;
                 let cxy = cfg.f.min
                     + Complex::new(x * interval.re / size.width, y * interval.im / size.height);
