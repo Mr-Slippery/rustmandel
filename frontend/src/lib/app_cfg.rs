@@ -160,8 +160,14 @@ impl AppConfig {
 
     fn cfg_name(arg: &String) -> String {
         let path = std::path::PathBuf::from(&arg);
+        let mut root;
         let basename = path.file_name().unwrap().to_str().unwrap();
-        let mut root = path.parent().unwrap().parent().unwrap().to_path_buf();
+        if ! basename.eq(DEFAULT_CFG) {
+            root = path.parent().unwrap().parent().unwrap().to_path_buf();
+        }
+        else {
+            root = path.clone();
+        }
         root.push(CFG_DIR);
         if arg.ends_with(CFG_SUFFIX) {
             arg.clone()
@@ -192,6 +198,7 @@ impl AppConfig {
     }
 
     pub fn default() -> AppConfig {
+        println!("Load default config from: {}", DEFAULT_CFG);
         Self::from(&Self::default_cfg())
     }
 }
