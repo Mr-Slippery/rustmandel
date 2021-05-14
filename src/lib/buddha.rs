@@ -1,7 +1,9 @@
 use num::complex::Complex;
 
-use crate::lib::dyn_sys::DDS;
-use crate::lib::dyn_sys::IFS;
+// use fast;
+
+use crate::dyn_sys::DDS;
+use crate::dyn_sys::IFS;
 
 use super::app_cfg::{default_max_norm, default_power};
 use super::mandel_base::MandelBase;
@@ -51,9 +53,9 @@ impl IFS<Complex<f64>, Vec<Complex<f64>>> for Buddhabrot {
     }
 }
 
-// use crate::lib::num_traits::Zero;
+// use num_traits::Zero;
 // use std::ops::Rem;
-// use crate::lib::num_traits::MulAdd;
+// use crate::num_traits::MulAdd;
 
 // This implementation corresponds to the Mandelbrot fractal.
 impl DDS<Complex<f64>> for Buddhabrot {
@@ -68,8 +70,9 @@ impl DDS<Complex<f64>> for Buddhabrot {
     }
  }
 
-// static mut X: f64 = 0.0;
-// static mut Y: f64 = 0.0;
+// static mut C: u64 = 0;
+// static mut X: f64 = 0.1;
+// static mut Y: f64 = 0.1;
 
 // fn f_polar(a: f64, b: f64) -> Complex<f64>{
 //     let d = Complex::new(a, b).to_polar();

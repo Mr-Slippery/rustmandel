@@ -1,7 +1,9 @@
 use num::complex::Complex;
 
-use crate::lib::dyn_sys::DDS;
-use crate::lib::dyn_sys::IFS;
+// use fast;
+
+use crate::dyn_sys::DDS;
+use crate::dyn_sys::IFS;
 
 use super::app_cfg::{default_max_norm, default_power};
 use super::mandel_base::MandelBase;
@@ -15,7 +17,7 @@ impl Mandelbrot {
     pub fn new(max_iter: u64) -> Self {
         Mandelbrot {
             base: MandelBase {
-                max_iter: max_iter,
+                max_iter,
                 power: default_power(),
                 max_norm: default_max_norm(),
             },
@@ -46,7 +48,7 @@ impl IFS<Complex<f64>, u64> for Mandelbrot {
     }
 }
 
-// use crate::lib::num_traits::Zero;
+// use num_traits::{MulAdd, Zero};
 // use std::ops::Rem;
 // use crate::lib::num_traits::MulAdd;
 // use crate::lib::num_traits::One;
@@ -62,10 +64,11 @@ impl DDS<Complex<f64>> for Mandelbrot {
     fn next(&self, z: Complex<f64>, c: Complex<f64>) -> Complex<f64> {
         z * z + c
     }
- }
+}
 
-// static mut X: f64 = 0.5;
-// static mut Y: f64 = 0.5;
+// static mut C: u64 = 0;
+// static mut X: f64 = 0.01;
+// static mut Y: f64 = 0.01;
 
 // fn f_polar(a: f64, b: f64) -> Complex<f64>{
 //     let d = Complex::new(a, b).to_polar();

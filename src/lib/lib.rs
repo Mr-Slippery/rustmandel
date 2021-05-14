@@ -1,6 +1,4 @@
-pub extern crate image as im;
-pub extern crate piston_window;
-pub use piston_window::*;
+pub extern crate fastapprox as fast;
 pub extern crate num_derive;
 pub extern crate num_traits;
 pub extern crate rand;

@@ -1,15 +1,20 @@
+pub extern crate image as im;
+pub extern crate piston_window;
+pub use piston_window::*;
+pub extern crate num_derive;
+pub extern crate num_traits;
+pub extern crate rand;
+
 use num::complex::Complex;
 use rand::prelude::*;
 use std::env;
 use std::error::Error;
 use std::fs;
 
-mod lib;
-use lib::app_cfg::{AppConfig, ColorScheme, Fractal, FractalType};
-use lib::buddha::Buddhabrot;
-use lib::dyn_sys::IFS;
-use lib::mandel::Mandelbrot;
-use lib::*;
+use mandel::app_cfg::{AppConfig, ColorScheme, Fractal, FractalType};
+use mandel::buddha::Buddhabrot;
+use mandel::dyn_sys::IFS;
+use mandel::mandel::Mandelbrot;
 
 enum Zoom {
     In,
@@ -69,6 +74,7 @@ fn render_mandel(c: &AppConfig, canvas: &mut im::RgbaImage) {
     }
 }
 
+
 #[inline]
 fn render_buddha(c: &AppConfig, canvas: &mut im::RgbaImage) {
     let bud = Buddhabrot::new_power_norm(c.f.max_it, c.f.power, c.f.max_norm);
@@ -100,9 +106,9 @@ fn render_buddha(c: &AppConfig, canvas: &mut im::RgbaImage) {
             }
             let pixel = canvas.get_pixel_mut(px, py);
             let rgba = pixel.0;
-            let r = if rgba[0] < 255 { rgba[0] + 1 } else { rgba[0] };
-            let g = if rgba[1] < 254 { rgba[1] + 1 } else { rgba[1] };
-            let b = if rgba[2] < 253 { rgba[2] + 1 } else { rgba[2] };
+            let r = if rgba[0] < 64 { rgba[0] + 1 } else { rgba[0] };
+            let g = if rgba[1] < 128 { rgba[1] + 1 } else { rgba[1] };
+            let b = if rgba[2] < 254 { rgba[2] + 1 } else { rgba[2] };
             *pixel = im::Rgba([r, g, b, 255]);
         }
     }
@@ -126,7 +132,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let path = env::current_dir()?;
     let args: Vec<String> = env::args().collect();
     let mut cfg: AppConfig;
-    if !args.is_empty() {
+    if args.len() > 1 {
         let arg: String = args[1].clone();
         cfg = AppConfig::from(&arg)
     } else {
@@ -420,7 +426,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
                 // Alter the color scheme.
                 Button::Keyboard(Key::D0) => {
-                    cfg.f.color_scheme = lib::app_cfg::next(cfg.f.color_scheme)
+                    cfg.f.color_scheme = mandel::app_cfg::next(cfg.f.color_scheme)
                 }
                 // Resize window
                 Button::Keyboard(Key::D1) => {

@@ -24,7 +24,7 @@
         {
             "label": "cargo release",
             "type": "shell",
-            "command": "cargo run --release --quiet ${file}",
+            "command": "cargo run --release --bin main --quiet ${file}",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -34,7 +34,7 @@
         {
             "label": "cargo debug",
             "type": "shell",
-            "command": "cargo run ${file}",
+            "command": "cargo run --bin main ${file}",
             "group": {
                 "kind": "build",
                 "isDefault": true
