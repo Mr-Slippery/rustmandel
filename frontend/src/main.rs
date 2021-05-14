@@ -116,8 +116,7 @@ fn render_buddha(c: &AppConfig, canvas: &mut im::RgbaImage) {
 use std::path::PathBuf;
 
 fn add_file(name: &str) -> String {
-    let mut src = PathBuf::from("src");
-    src.push("lib");
+    let mut src = PathBuf::from("../compute/src/lib");
     src.push(name);
     let contents =
         fs::read_to_string(src.to_str().unwrap()).expect(&format!("Error reading {}.", name));
