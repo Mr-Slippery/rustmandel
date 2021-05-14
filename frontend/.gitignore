@@ -1,7 +1,7 @@
 /target
 Cargo.lock
 # Saved images and thumbs
-**/*.png
+*/**/*.png
 **/*.jpg
 **/*.bmp
 **/*.mov
