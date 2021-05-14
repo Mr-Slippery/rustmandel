@@ -1,0 +1,21 @@
+[package]
+name = "mandel_compute"
+version = "0.1.0"
+authors = ["Cornel Izbasa <badc0ded@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "mandel_compute"
+path = "src/lib/lib.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+fastapprox = "*"
+serde = { version = "1.0", features = ["derive"] }
+toml = "*"
+num-complex = { version = "0.2.4", features = ["serde"] }
+num-traits = "*"
+chrono = "*"
+num = "0.2.1"
+rand = "*"

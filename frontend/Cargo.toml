@@ -1,0 +1,27 @@
+[package]
+name = "mandel"
+version = "0.1.0"
+authors = ["Cornel Izbasa <badc0ded@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "mandel"
+path = "src/lib/lib.rs"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+mandel_compute = { path = "../compute" }
+serde = { version = "1.0", features = ["derive"] }
+toml = "*"
+num-traits = "*"
+num-derive = "*"
+num = "0.2.1"
+chrono = "*"
+image = "*"
+piston_window = "*"
+rand = "*"

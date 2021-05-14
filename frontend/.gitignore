@@ -1,0 +1,13 @@
+/target
+Cargo.lock
+# Saved images and thumbs
+**/*.png
+**/*.jpg
+**/*.bmp
+**/*.mov
+**/*.mp4
+**/*.asf
+**/*.wmv
+**/*.psdb
+# Mac stuff
+**/.DS_Store
