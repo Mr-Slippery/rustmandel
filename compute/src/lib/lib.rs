@@ -8,3 +8,4 @@ pub mod dyn_sys;
 pub mod mandel;
 pub mod mandel_base;
 pub mod defaults;
+pub mod func;

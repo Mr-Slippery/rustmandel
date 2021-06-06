@@ -439,12 +439,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                     // Save the config.
 
                     let out_cfg_str = format!(
-                        "{}{}",
+                        "{}{}{}",
                         toml::to_string_pretty(&cfg).unwrap(),
                         match cfg.f.fractal {
                             Fractal::Mandelbrot => add_file("mandel.rs"),
                             Fractal::Buddhabrot => add_file("buddha.rs"),
-                        }
+                        },
+                        add_file("func.rs")
                     );
                     let name = cfg.cfg_path();
                     let name1 = name.clone();
