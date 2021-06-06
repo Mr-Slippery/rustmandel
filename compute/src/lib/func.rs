@@ -1,13 +1,16 @@
 use num::complex::Complex;
 
 // use fast;
-// use num_traits::Zero;
+use num_traits::Zero;
 // use num_traits::One;
-// use std::ops::Rem;
+use std::ops::Rem;
 // use num_traits::MulAdd;
 
-pub fn next(z: Complex<f64>, c: Complex<f64>) -> Complex<f64> {
-    z * z + c
+pub fn next(z: Complex<f64>, c: Complex<f64>, power: i32) -> Complex<f64> {
+    if z.is_zero() {
+        return c       
+    }
+    z * c + z.rem(c + z).powi(power)
 }
 
 // static mut C: u64 = 0;

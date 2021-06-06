@@ -62,7 +62,7 @@ impl DDS<Complex<f64>> for Buddhabrot {
 
     #[inline]
     fn next(&self, z: Complex<f64>, c: Complex<f64>) -> Complex<f64> {
-        func::next(z, c)
+        func::next(z, c, self.base.power)
     }
 }
 
