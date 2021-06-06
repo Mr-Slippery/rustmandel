@@ -47,13 +47,12 @@ impl IFS<Complex<f64>, Vec<Complex<f64>>> for Buddhabrot {
         if i < self.base.max_iter {
             res
         } else {
-            let r: Vec<Complex<f64>> = vec![];
-            r
+            vec![]
         }
     }
 }
 
-use num_traits::Zero;
+// use num_traits::Zero;
 // use std::ops::Rem;
 // use crate::num_traits::MulAdd;
 
@@ -66,19 +65,9 @@ impl DDS<Complex<f64>> for Buddhabrot {
 
     #[inline]
     fn next(&self, z: Complex<f64>, c: Complex<f64>) -> Complex<f64> {
-        if z.is_zero() {
-            return c
-        }
-        match (171.5 * z.norm_sqr()) as u64 % 4 {
-            0 => z * z + c,
-            1 => z * z * 0.6 + c,
-            2 => z * z * 0.4 + c,
-            3 => z * z * 0.2 + c,
-            _ => Complex::zero()
-        }
+        z * z + c
     }
- }
-
+}
 // static mut C: u64 = 0;
 // static mut X: f64 = 0.1;
 // static mut Y: f64 = 0.1;

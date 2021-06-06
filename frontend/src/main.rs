@@ -73,43 +73,89 @@ fn render_mandel(c: &AppConfig, canvas: &mut im::RgbaImage) {
     }
 }
 
+#[inline]
+fn plot_points(c: &AppConfig, canvas: &mut im::RgbaImage, m: &Vec<Complex<f64>>,
+               d_x: u32, d_y: u32,
+               d: &Complex<f64>) {
+    for z in m {
+        let px = (d_x as f64 * (z.re - c.f.min.re) / d.re) as u32;
+        if px >= d_x {
+            continue;
+        }
+        let py = (d_y as f64 * (z.im - c.f.min.im) / d.im) as u32;
+        if py >= d_y {
+            continue;
+        }
+        let pixel = canvas.get_pixel_mut(px, py);
+        let rgba = pixel.0;
+        let r = if rgba[0] < 64 { rgba[0] + 1 } else { rgba[0] };
+        let g = if rgba[1] < 128 { rgba[1] + 1 } else { rgba[1] };
+        let b = if rgba[2] < 254 { rgba[2] + 1 } else { rgba[2] };
+        *pixel = im::Rgba([r, g, b, 255]);
+    }
+}
+
+#[inline]
+fn iter_point(c: &AppConfig, p: &Complex<f64>, bud: &Buddhabrot) -> Vec<Complex<f64>> {
+    let m: Vec<Complex<f64>>;
+    match c.f.fractal_type {
+        FractalType::Mandelbrot => m = bud.iter(Complex::zero(), *p),
+        FractalType::Julia => m = bud.iter(*p, Complex::new(-0.70, -0.33)),
+    }
+    m
+}
+
+#[inline]
+fn choose_point(c: &AppConfig, choose_min: &Complex<f64>,
+    d: &Complex<f64>, rng: &mut ThreadRng) -> Complex<f64> {
+    let buddha_rel_size = c.f.buddhabrot_rel_size;
+    let x: f64 = choose_min.re - buddha_rel_size * d.re
+    + (2.0 * buddha_rel_size + 1.0) * d.re * rng.gen::<f64>();
+    let y: f64 = choose_min.im - buddha_rel_size * d.im
+    + (2.0 * buddha_rel_size + 1.0) * d.im * rng.gen::<f64>();
+    Complex::new(x, y)
+}
+
+#[inline]
+fn plot_near(c: &AppConfig, canvas: &mut im::RgbaImage, p: &Complex<f64>,
+             d_x: u32, d_y: u32, d: &Complex<f64>, near_size: u64, bud: &Buddhabrot) {
+    let near_min = p - d / 50.0;
+    let d_near =  2.0 * (p - near_min);
+    let mut rng = rand::thread_rng();
+    for _ in 0..near_size {
+        let near_p = choose_point(c, &near_min, &d_near, &mut rng);
+        let near_m = iter_point(c, &near_p, &bud);
+        if !near_m.is_empty() {
+            plot_points(c, canvas, &near_m, d_x, d_y, &d)
+        }
+    }
+}
+
+static mut BUDDHA_RENDERS: u64 = 0;
 
 #[inline]
 fn render_buddha(c: &AppConfig, canvas: &mut im::RgbaImage) {
     let bud = Buddhabrot::new_power_norm(c.f.max_it, c.f.power, c.f.max_norm);
     let d_x = canvas.width();
     let d_y = canvas.height();
+    let d = c.f.max - c.f.min;
     let mut rng = rand::thread_rng();
-    for _ in 0..c.f.buddhabrot_points {
-        let d_re = c.f.max.re - c.f.min.re;
-        let d_im = c.f.max.im - c.f.min.im;
-        let buddha_rel_size = c.f.buddhabrot_rel_size;
-        let x: f64 = c.f.min.re - buddha_rel_size * d_re
-            + (2.0 * buddha_rel_size + 1.0) * d_re * rng.gen::<f64>();
-        let y: f64 = c.f.min.im - buddha_rel_size * d_im
-            + (2.0 * buddha_rel_size + 1.0) * d_im * rng.gen::<f64>();
-        let p = Complex::new(x, y);
-        let m: Vec<Complex<f64>>;
-        match c.f.fractal_type {
-            FractalType::Mandelbrot => m = bud.iter(Complex::zero(), p),
-            FractalType::Julia => m = bud.iter(p, Complex::new(-0.70, -0.33)),
+    let mut count: u64 = 0;
+    while count < c.f.buddhabrot_points {
+        count += 1;
+        let p = choose_point(c, &c.f.min, &d, &mut rng);
+        let m = iter_point(c, &p, &bud);
+        if !m.is_empty() {
+            plot_points(c, canvas, &m, d_x, d_y, &d);
+            let near_size = m.len() as u64 * 20;
+            // println!("near_size: {}", near_size);
+            count += near_size;
+            plot_near(c, canvas, &p, d_x, d_y, &d, near_size, &bud)
         }
-        for z in m {
-            let px = (d_x as f64 * (z.re - c.f.min.re) / d_re) as u32;
-            if px >= d_x {
-                continue;
-            }
-            let py = (d_y as f64 * (z.im - c.f.min.im) / d_im) as u32;
-            if py >= d_y {
-                continue;
-            }
-            let pixel = canvas.get_pixel_mut(px, py);
-            let rgba = pixel.0;
-            let r = if rgba[0] < 64 { rgba[0] + 1 } else { rgba[0] };
-            let g = if rgba[1] < 128 { rgba[1] + 1 } else { rgba[1] };
-            let b = if rgba[2] < 254 { rgba[2] + 1 } else { rgba[2] };
-            *pixel = im::Rgba([r, g, b, 255]);
-        }
+    }
+    unsafe {
+        BUDDHA_RENDERS += 1;
+        println!("Buddha: {}", BUDDHA_RENDERS)
     }
 }
 

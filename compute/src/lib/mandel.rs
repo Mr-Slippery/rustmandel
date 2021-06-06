@@ -1,5 +1,5 @@
-use num::{Zero, complex::Complex};
-
+use num::complex::Complex;
+// use num::Zero;
 // use fast;
 
 use crate::dyn_sys::DDS;
@@ -62,16 +62,7 @@ impl DDS<Complex<f64>> for Mandelbrot {
 
     #[inline]
     fn next(&self, z: Complex<f64>, c: Complex<f64>) -> Complex<f64> {
-        if z.is_zero() {
-            return c
-        }
-        match (171.5 * z.norm_sqr()) as u64 % 4 {
-            0 => z * z + c,
-            1 => z * z * 0.6 + c,
-            2 => z * z * 0.4 + c,
-            3 => z * z * 0.2 + c,
-            _ => Complex::zero()
-        }
+        z * z + c
     }
 }
 
